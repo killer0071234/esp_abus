@@ -215,12 +215,16 @@ void abus_socket::loop()
         if (ab_checkValidPacket(recbuf, min(len, (int)sizeof(recbuf))))
         {
             ab_header header = ab_getHeader(recbuf, len);
-
-            if (header.dir == 1u && header.typ > 0u) // we got a socket message
+            // we got a socket message
+            if (header.dir == 1u && header.typ > 0u)
             {
                 ABSOCK_DBG_PRINTF("*AB: rec-len=%d, ", len);
                 ABSOCK_DBG_PRINTF("<SOCK:  ID: %3d: ", header.typ);
                 uint8_t cbPos = 0;
+                // loop through all socket callbacks and forward the socket data for it
+                // the function will only raise the callback if the following criteria are fulfilled:
+                // socket ID is correct
+                // total amount of data is correct (1 bit 2 int and 3 real, socket has 17 byte of data)
                 while (cbPos < ABSOCK_MAX_SOCKETS)
                 {
                     if(cb_id[cbPos] > 0 && cb_socketInfo[cbPos].socket_id == header.typ)
@@ -258,8 +262,6 @@ void abus_socket::loop()
                     pos++;
                 }
                 ABSOCK_DBG_PRINTLN("");
-
-
 
             }
             #endif       
@@ -317,6 +319,10 @@ void abus_socket::sendRaw(char *data, size_t datalen)
         ABSOCK_DBG_PRINTF(":%02X", data[pos]);
         pos++;
     }
+    //IPAddress ipSnMask = WiFi.subnetMask();
+    //uint32_t uiSnMask = ipSnMask;
+    //IPAddress ipBroadcast = WiFi.localIP | ( ~uiSnMask);
+    //ABSOCK_DBG_PRINTLN(ipBroadcast.toString());
     IPAddress host = {192, 168, 10, 255};
     Udp.beginPacket(host, localUdpPort);
     Udp.write(data, datalen);
