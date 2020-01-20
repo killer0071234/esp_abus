@@ -174,7 +174,7 @@ void abus_socket::begin()
     if (!IP_Remote.isSet())
     {
         IP_Remote = WiFi.localIP().v4() | ~WiFi.subnetMask().v4();
-        ABSOCK_DBG_PRINTLN(F("*AB: calc broadcast IP from WiFi IP"));
+        //ABSOCK_DBG_PRINTLN(F("*AB: calc broadcast IP from WiFi IP"));
     }
     if (!ownNad)
     {
@@ -319,12 +319,7 @@ void abus_socket::sendRaw(char *data, size_t datalen)
         ABSOCK_DBG_PRINTF(":%02X", data[pos]);
         pos++;
     }
-    //IPAddress ipSnMask = WiFi.subnetMask();
-    //uint32_t uiSnMask = ipSnMask;
-    //IPAddress ipBroadcast = WiFi.localIP | ( ~uiSnMask);
-    //ABSOCK_DBG_PRINTLN(ipBroadcast.toString());
-    IPAddress host = {192, 168, 10, 255};
-    Udp.beginPacket(host, localUdpPort);
+    Udp.beginPacket(IP_Remote, localUdpPort);
     Udp.write(data, datalen);
     if (Udp.endPacket())
     {
