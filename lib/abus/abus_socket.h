@@ -171,11 +171,19 @@ abus_socket::~abus_socket()
 
 void abus_socket::begin()
 {
+#if defined(ESP8266)
     if (!IP_Remote.isSet())
     {
         IP_Remote = WiFi.localIP().v4() | ~WiFi.subnetMask().v4();
         //ABSOCK_DBG_PRINTLN(F("*AB: calc broadcast IP from WiFi IP"));
     }
+#elif defined(ESP32)
+    if (IP_Remote == INADDR_NONE)
+    {
+        ABSOCK_DBG_PRINTLN(F("*AB: calc broadcast IP from WiFi IP"));
+        IP_Remote = WiFi.localIP() | ~WiFi.subnetMask();
+    }
+#endif
     if (!ownNad)
     {
         char mac[12];
@@ -320,7 +328,13 @@ void abus_socket::sendRaw(char *data, size_t datalen)
         pos++;
     }
     Udp.beginPacket(IP_Remote, localUdpPort);
+#if defined(ESP8266)
     Udp.write(data, datalen);
+#elif defined(ESP32)
+    size_t i = 0;
+    while (i < datalen)
+        Udp.write((uint8_t)data[i++]);
+#endif
     if (Udp.endPacket())
     {
         ABSOCK_DBG_PRINTLN(F(" sndOK"));

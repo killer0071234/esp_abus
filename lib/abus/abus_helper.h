@@ -94,13 +94,13 @@ struct ab_socket
     std::vector<uint8_t> bitdata; // representation of a boolean value (must be byte because bool(ean) has unpredictable behaviour)
     std::vector<int16_t> intdata;
     std::vector<int32_t> longdata;
-    std::vector<real32_t> realdata;
+    std::vector<float_t> realdata;
 };
 
 // helper union for converting a 4 bytes into one real value and vice versa
 union ab_real {
-    real32_t real;
-    char bytes[sizeof(real32_t)];
+    float_t real;
+    char bytes[sizeof(float_t)];
 } ab_real;
 union ab_int {
     byte b[sizeof(int16_t)];
@@ -187,7 +187,7 @@ uint32_t ab_getULongVal(char *data, size_t len, uint16_t pos)
     return retval;
 }
 // returns a real value of the  4bytes
-real32_t ab_getRealVal(char *data, size_t len, uint16_t pos)
+float_t ab_getRealVal(char *data, size_t len, uint16_t pos)
 {
     ab_real.real = 0.0;
     if (len >= pos + 3u)
@@ -200,7 +200,7 @@ real32_t ab_getRealVal(char *data, size_t len, uint16_t pos)
     return ab_real.real;
 }
 // returns a real value of the  4bytes
-void ab_setRealVal(char *data, size_t len, uint16_t pos, real32_t val)
+void ab_setRealVal(char *data, size_t len, uint16_t pos, float_t val)
 {
     ab_real.real = val;
     if (len >= pos + 3u)
@@ -432,29 +432,27 @@ void ab_setSocket(char *data, size_t datalen, ab_socket socket)
 void ab_addBitTag(ab_socket *socket, bool value)
 {
     size_t pos = socket->bitdata.size() + 1;
-    socket->bitdata.resize(pos, false);
-    socket->bitdata[pos] = value;
+    socket->bitdata.resize(pos, value);
     socket->config.bitcount = pos;
 }
 void ab_addIntTag(ab_socket *socket, int16_t value)
 {
     size_t pos = socket->intdata.size() + 1;
-    socket->intdata.resize(pos, false);
-    socket->intdata[pos] = value;
+    socket->intdata.resize(pos, value);
     socket->config.intcount = pos;
 }
 void ab_addLongTag(ab_socket *socket, int32_t value)
 {
     size_t pos = socket->longdata.size() + 1;
-    socket->longdata.resize(pos, false);
-    socket->longdata[pos] = value;
+    socket->longdata.resize(pos, value);
     socket->config.longcount = pos;
 }
-void ab_addRealTag(ab_socket *socket, real32_t value)
+void ab_addRealTag(ab_socket *socket, float_t value)
 {
+    if(isnan(value))
+        value = 0.0;
     size_t pos = socket->realdata.size() + 1;
-    socket->realdata.resize(pos, false);
-    socket->realdata[pos] = value;
+    socket->realdata.resize(pos, value);
     socket->config.realcount = pos;
 }
 
