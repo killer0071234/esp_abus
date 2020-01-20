@@ -72,6 +72,13 @@ void cbSockToVorlauf(ab_socket sock)
                                           sock.intdata[1], sock.intdata[2], sock.intdata[3]);
 	return;
 }
+void cbSockPlantCheckV3(ab_socket sock)
+{
+	DEBUG_ESP_SERIAL("id=%d, temp=%d, hum=%d, mois=%d",
+                                          sock.longdata[0],
+                                          sock.intdata[0], sock.intdata[1], sock.intdata[2]);
+	return;
+}
 
 void setup()
 {
@@ -128,6 +135,7 @@ void setup()
 	abSock.setSocketCallback(3, 3, 0, 0, 0, cbSockAnfWhg);
 	abSock.setSocketCallback(4, 5, 1, 0, 6, cbSockToWhg);
 	abSock.setSocketCallback(5, 0, 0, 0, 2, cbSockPool);
+	abSock.setSocketCallback(8, 0, 3, 1, 0, cbSockPlantCheckV3);
 	abSock.setSocketCallback(11, 0, 0, 0, 13, cbSockRegler);
 	abSock.setSocketCallback(20, 3, 1, 0, 0, cbSockToKessel);
 	abSock.setSocketCallback(22, 0, 12, 2, 0, cbSockWeatherRec);
@@ -143,6 +151,7 @@ void loop()
 	{
 		ab_socket sock;
 		ab_addBitTag(&sock, true);
+		ab_addRealTag(&sock, 12.3);
 		sock.config.socket_id = 5;
 
 		//abSock.sendSocket(sock);
