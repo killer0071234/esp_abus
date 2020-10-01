@@ -20,6 +20,6 @@
     "homepage": "https://www.helloworld.org/",
     "dependencies": {
     },
-    "frameworks": "*",
-    "platforms": "*"
+    "frameworks": "arduino",
+    "platforms": ["espressif8266", "espressif32"]
   }
