@@ -191,11 +191,8 @@ void abus_socket::begin()
         ownNad = mac[0] | mac[1] << 8L | mac[2] << 16L | mac[3] << 24L;
     }
     Udp.begin(localUdpPort);
-#if defined(ESP32)
-    ABSOCK_DBG_PRINTF("*AB: begin()->remoteIP=%s, port=%d, nad=%lu\n", IP_Remote.toString().c_str(), localUdpPort, (unsigned long)ownNad);
-#else
-    ABSOCK_DBG_PRINTF("*AB: begin()->remoteIP=%s, port=%d, nad=%lu\n", IP_Remote.toString().c_str(), localUdpPort, ownNad);
-#endif
+    ABSOCK_DBG_PRINTF("*AB: begin()->remoteIP=%s, port=%d, nad=%lu\n", IP_Remote.toString().c_str(), localUdpPort, (long unsigned int)ownNad);
+
 }
 void abus_socket::begin(unsigned int localUdpPort)
 {
