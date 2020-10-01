@@ -10,8 +10,8 @@
 #elif defined(ESP32)
 #include <WiFi.h>
 #endif
-char ssid[] = SECRET_SSID; // your network SSID (name)
-char pass[] = SECRET_PASS; // your network password
+char ssid[] = "SECRET_SSID"; // your network SSID (name)
+char pass[] = "SECRET_PASS"; // your network password
 
 #include <abus_socket.h>
 abus_socket abSock(8442, 8266);
@@ -26,7 +26,7 @@ void setup()
     if (WiFi.status() != WL_CONNECTED)
     {
         Serial.print("Attempting to connect to SSID: ");
-        Serial.println(SECRET_SSID);
+        Serial.println(ssid);
         while (WiFi.status() != WL_CONNECTED)
         {
             WiFi.begin(ssid, pass); // Connect to WPA/WPA2 network. Change this line if using open or WEP network
@@ -35,6 +35,7 @@ void setup()
         }
         Serial.println("\nConnected.");
     }
+    // initialize the socket function
     abSock.begin();
 }
 
