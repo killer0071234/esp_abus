@@ -1,0 +1,26 @@
+{
+    "name": "esp_abus",
+    "version": "0.0.1",
+    "description": "A library to communicate between PLCs from Cybrotech and ESP32 / ESP8266 over WiFi",
+    "keywords": "abus, socket, cybrotech, cybro, cypro",
+    "repository":
+    {
+      "type": "git",
+      "url": "https://github.com/killer0071234/esp_abus.git"
+    },
+    "authors":
+    [
+      {
+        "name": "Daniel Gangl",
+        "email": "killer007@gmx.at",
+        "url": "https://www.john-smith/contact"
+      }
+    ],
+    "license": "MIT",
+    "homepage": "https://www.helloworld.org/",
+    "dependencies": {
+      "ownername/print": "~1.3.0"
+    },
+    "frameworks": "*",
+    "platforms": "*"
+  }

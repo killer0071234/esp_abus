@@ -387,7 +387,7 @@ ab_socket ab_getSocket(char *data, size_t datalen, ab_header &header, uint8_t so
     }
     return retval;
 }
-// with tis function it is possible to parse a received package for valid socket data
+// with this function it is possible to parse a received package for valid socket data
 ab_socket ab_getSocket(char *data, size_t datalen, ab_header &header, ab_socket_config sock_conf)
 {
     return ab_getSocket(data, datalen, header, sock_conf.socket_id, sock_conf.bitcount, sock_conf.intcount, sock_conf.longcount, sock_conf.realcount);
