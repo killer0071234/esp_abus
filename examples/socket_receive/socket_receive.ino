@@ -58,7 +58,7 @@ void setup()
     }
     // initialize the socket function
     abSock.begin();
-    // add a callback to receive 1 bit, 1 int, 1 long, 1 real tag / variable
+    // add a callback to receive a socket with id: 3 and 1 bit, 1 int, 1 long, 1 real tag / variable
     abSock.setSocketCallback(3, 1, 1, 1, 1, cbSocketReceived);
 }
 void loop()

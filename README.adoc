@@ -1,5 +1,0 @@
-= abus library for the ESP8266 / ESP32 devices to communicate with PLCs from Cybrotech =
-
-== License ==
-
-This library is free software

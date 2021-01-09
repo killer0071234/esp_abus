@@ -1,6 +1,6 @@
 /*
- This example sends a socket every 10 seconds
- the socket can be received with the socket_receive.ino function
+ * This example sends and receives a socket
+ * if a socket is received, the callback is triggered
  */
 
 #include <Arduino.h>
@@ -15,6 +15,27 @@ char pass[] = "SECRET_PASS"; // your network password
 
 #include <abus_socket.h>
 abus_socket abSock(8442, 8266);
+
+// callback declaration for receiving a socket
+void cbSocketReceived(ab_socket sock)
+{
+    // print the received socket id
+    Serial.print("socket ID=");
+    Serial.print(sock.config.socket_id);
+    // print the received boolean / bit value
+    Serial.print(",bit0=");
+    Serial.print(sock.bitdata.at(0));
+    // print the received integer value
+    Serial.print(",int0=");
+    Serial.print(sock.intdata.at(0));
+    // print the received long value
+    Serial.print(",long0=");
+    Serial.print(sock.longdata.at(0));
+    // print the received real value
+    Serial.print(",real0=");
+    Serial.print(sock.realdata.at(0));
+    return;
+}
 
 void setup()
 {
@@ -37,13 +58,15 @@ void setup()
     }
     // initialize the socket function
     abSock.begin();
+    // add a callback to receive a socket with id: 3 and 1 bit, 1 int, 1 long, 1 real tag / variable
+    abSock.setSocketCallback(3, 1, 1, 1, 1, cbSocketReceived);
 }
 
 uint32_t millis_next = 10000;
 void loop()
 {
-	// put your main code here, to run repeatedly:
-	abSock.loop();
+    // put your main code here, to run repeatedly:
+    abSock.loop();
 
 	if (millis() >= millis_next)
 	{

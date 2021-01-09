@@ -1,7 +1,7 @@
 {
     "name": "esp_abus",
-    "version": "0.0.2",
-    "description": "A library to communicate between PLCs from Cybrotech and ESP32 / ESP8266 over WiFi",
+    "version": "0.0.3",
+    "description": "ABUS Socket Communication library for PLCs (Cybro-2 and Cybro-3) from Cybrotech and ESP32 / ESP8266 over WiFi",
     "keywords": "abus, socket, cybrotech, cybro, cypro",
     "repository":
     {
