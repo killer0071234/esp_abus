@@ -1,0 +1,54 @@
+#######################################
+# Syntax Coloring Map For abus_lib
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+ab_header	KEYWORD1
+ab_socket_config	KEYWORD1
+ab_socket	KEYWORD1
+ab_real	KEYWORD1
+ab_int	KEYWORD1
+ab_long	KEYWORD1
+ab_ulong	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+loop	KEYWORD2
+sendSocket	KEYWORD2
+sendRaw	KEYWORD2
+setSocketCallback	KEYWORD2
+removeSocketCallback	KEYWORD2
+ab_calcCRC	KEYWORD2
+ab_getBoolVal	KEYWORD2
+ab_getIntVal	KEYWORD2
+ab_getUIntVal	KEYWORD2
+ab_getLongVal	KEYWORD2
+ab_getULongVal	KEYWORD2
+ab_getRealVal	KEYWORD2
+ab_setRealVal	KEYWORD2
+ab_setBoolVal	KEYWORD2
+ab_setIntVal	KEYWORD2
+ab_setUIntVal	KEYWORD2
+ab_setLongVal	KEYWORD2
+ab_setULongVal	KEYWORD2
+ab_checkValidPacket	KEYWORD2
+ab_getHeader	KEYWORD2
+ab_setHeader	KEYWORD2
+ab_getSocket	KEYWORD2
+ab_setSocket	KEYWORD2
+ab_addBitTag	KEYWORD2
+ab_addIntTag	KEYWORD2
+ab_addLongTag	KEYWORD2
+ab_addRealTag	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+MAX_DATA_LEN	LITERAL1
+ABSOCK_MAX_SOCKETS	LITERAL1
