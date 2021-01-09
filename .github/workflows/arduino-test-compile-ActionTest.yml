@@ -119,8 +119,7 @@ jobs:
           sketches-exclude: ${{ matrix.sketches-exclude }}
           build-properties: ${{ toJson(matrix.build-properties) }}
           sketch-names:
-            WhistleSwitch.ino,
-            50Hz.ino,
-            SimpleFrequencyDetector.ino,
-            test.ino
+            socket_receive.ino,
+            socket_send.ino,
+            socket_send_receive.ino
           sketch-names-find-start: test
