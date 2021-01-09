@@ -1,6 +1,6 @@
 /*
- This example receives a socket and triggers a callback if the socket with the same number is recevied
-
+ * This example sends and receives a socket
+ * if a socket is received, the callback is triggered
  */
 
 #include <Arduino.h>
@@ -61,8 +61,30 @@ void setup()
     // add a callback to receive a socket with id: 3 and 1 bit, 1 int, 1 long, 1 real tag / variable
     abSock.setSocketCallback(3, 1, 1, 1, 1, cbSocketReceived);
 }
+
+uint32_t millis_next = 10000;
 void loop()
 {
     // put your main code here, to run repeatedly:
     abSock.loop();
+
+	if (millis() >= millis_next)
+	{
+        // define a new socket object
+		ab_socket sock;
+        // add a boolen / bit tag / variable to the socket element
+		ab_addBitTag(&sock, true);
+        // add a integer tag / variable to the socket element
+		ab_addIntTag(&sock, 123);
+        // add a integer tag / variable to the socket element
+		ab_addLongTag(&sock, 123456);
+        // add a real / float tag / variable to the socket element
+		ab_addRealTag(&sock, 12.3);
+        // set the socket id for sending it
+		sock.config.socket_id = 3;
+
+        // send the socket over wifi to the PLC
+		abSock.sendSocket(sock);
+		millis_next = millis() + 10000;
+	}
 }
