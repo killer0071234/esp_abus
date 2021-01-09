@@ -1,6 +1,6 @@
 /*
- This example receives a socket and triggers a callback if the socket with the same number is recevied
-
+ This example sends a socket every 10 seconds
+ the socket can be received with the socket_receive.ino function
  */
 
 #include <Arduino.h>
@@ -58,7 +58,7 @@ void loop()
         // add a real / float tag / variable to the socket element
 		ab_addRealTag(&sock, 12.3);
         // set the socket id for sending it
-		sock.config.socket_id = 5;
+		sock.config.socket_id = 3;
 
         // send the socket over wifi to the PLC
 		abSock.sendSocket(sock);

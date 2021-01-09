@@ -84,17 +84,36 @@ class abus_socket
 {
 private:
     /* data */
-    WiFiUDP Udp;
-    unsigned int localUdpPort = 8442;
-    IPAddress IP_Remote;
-    uint32_t ownNad = 0;
-    ab_socket_config cb_socketInfo[ABSOCK_MAX_SOCKETS];
-    uint8_t cb_id[ABSOCK_MAX_SOCKETS];
-    SubscribeCallbackAbSocket cb_fct[ABSOCK_MAX_SOCKETS];
+    WiFiUDP Udp;                                            // wifi udp driver
+    uint16_t m_localUdpPort = 8442;                         // local udp abus port
+    IPAddress m_BroadCastIp;                                // broadcast ip address
+    uint32_t m_ownNad = 0;                                  // own communication NAD
+    ab_socket_config cb_socketInfo[ABSOCK_MAX_SOCKETS];     // callback socket config data
+    uint8_t cb_id[ABSOCK_MAX_SOCKETS];                      // callback ids
+    SubscribeCallbackAbSocket cb_fct[ABSOCK_MAX_SOCKETS];   // callback function pointers
 public:
+    /**
+     * * abus_socket 
+     * 
+     */
     abus_socket();
+    /**
+     * * abus_socket 
+     * constructor with fixed NAD
+     * @param  {uint32_t} NAD : communication NAD (network address)
+     */
     abus_socket(uint32_t NAD);
-    abus_socket(unsigned int localUdpPort, uint32_t NAD);
+    /**
+     * * abus_socket 
+     * constructor with fixed NAd and different abus port
+     * @param  {uint16_t} localUdpPort : local abus udp port to listen on
+     * @param  {uint32_t} NAD          : communication NAD (network address)
+     */
+    abus_socket(uint16_t localUdpPort, uint32_t NAD);
+    /**
+     * * ~abus_socket 
+     * deconstructor
+     */
     ~abus_socket();
     /**
         initialization after connect to wifi
@@ -104,16 +123,18 @@ public:
         initialization after connect to wifi
         @param localUdpPort overwrites the default UDP receive port of 8442
     */
-    void begin(unsigned int localUdpPort);
+    void begin(uint16_t localUdpPort);
     /**
         initialization after connect to wifi
-        @param remoteIP overwrites the default UDP receive port of 8442
+        @param bCastIP overwrite / set the broadcast ip
     */
-    void begin(IPAddress remoteIP);
+    void begin(IPAddress bCastIP);
     /**
         initialization after connect to wifi
+        @param bCastIP overwrite / set the broadcast ip
+        @param localUdpPort overwrites the default UDP receive port of 8442
     */
-    void begin(IPAddress remoteIP, unsigned int localUdpPort);
+    void begin(IPAddress bCastIP, uint16_t localUdpPort);
     /**
         cyclic loop for receive handling of Abus messages
         this function should be called in the main cycle to handle all incoming messages
@@ -121,10 +142,13 @@ public:
     void loop();
     /**
      * send out a abus socket message
+     * @param ab_socket the socket to send out
     */
     void sendSocket(ab_socket);
     /**
      * send a raw message on the network
+     * @param data pointer to send data buffer
+     * @param datalen datalength to seond out
     */
     void sendRaw(char *data, size_t datalen);
     /**
@@ -136,81 +160,82 @@ public:
     uint8_t setSocketCallback(ab_socket_config config, SubscribeCallbackAbSocket cbFunction);
     /**
      * set a callback for a specific socket with the given configuration
-     * @param sock_id socket id (id, amount of bit, int, long and real tags)
-     * @param bitcount number of used bit tags
-     * @param intcount number of used int tags
-     * @param longcount number of used long tags
-     * @param realcount number of used real tags
+     * @param sock_id the socket id to listen on
+     * @param bitcount the amount of bit values in the socket
+     * @param intcount the amount of integer values in the socket
+     * @param longcount the amount of long values in the socket
+     * @param realcount the amount of real values in the socket
      * @param cbFunction callback function name which is triggered after the socket is received
      * @return return the handle number of the socket (0 = error, >0 = handler)
-    */
+     */
     uint8_t setSocketCallback(uint8_t sock_id, uint8_t bitcount, uint8_t intcount, uint8_t longcount, uint8_t realcount, SubscribeCallbackAbSocket cbFunction);
     /**
      * remove / delete a socket callback function
      * @param handler the handler of the socket callback which should be deleted
+     * @return true = succesful, false = error / no callback found
     */
     bool removeSocketCallback(uint8_t handle);
 };
+
+// code implementations
 
 abus_socket::abus_socket()
 {
 }
 abus_socket::abus_socket(uint32_t NAD)
 {
-    ownNad = NAD;
+    m_ownNad = NAD;
 }
-abus_socket::abus_socket(unsigned int localUdpPort, uint32_t NAD)
+abus_socket::abus_socket(uint16_t localUdpPort, uint32_t NAD)
 {
-    localUdpPort = localUdpPort;
-    ownNad = NAD;
+    m_localUdpPort = localUdpPort;
+    m_ownNad = NAD;
 }
 abus_socket::~abus_socket()
 {
     Udp.stop();
 }
-
 void abus_socket::begin()
 {
 #if defined(ESP8266)
-    if (!IP_Remote.isSet())
+    if (!m_BroadCastIp.isSet())
     {
-        IP_Remote = WiFi.localIP().v4() | ~WiFi.subnetMask().v4();
         //ABSOCK_DBG_PRINTLN(F("*AB: calc broadcast IP from WiFi IP"));
+        m_BroadCastIp = WiFi.localIP().v4() | ~WiFi.subnetMask().v4();
     }
 #elif defined(ESP32)
-    if (IP_Remote == INADDR_NONE)
+    if (m_BroadCastIp == INADDR_NONE)
     {
-        ABSOCK_DBG_PRINTLN(F("*AB: calc broadcast IP from WiFi IP"));
-        IP_Remote = WiFi.localIP() | ~WiFi.subnetMask();
+        //ABSOCK_DBG_PRINTLN(F("*AB: calc broadcast IP from WiFi IP"));
+        m_BroadCastIp = WiFi.localIP() | ~WiFi.subnetMask();
     }
 #endif
-    if (!ownNad)
+    if (!m_ownNad)
     {
         char mac[12];
         WiFi.macAddress().toCharArray(mac, sizeof(mac), 0);
-        ownNad = mac[0] | mac[1] << 8L | mac[2] << 16L | mac[3] << 24L;
+        m_ownNad = mac[0] | mac[1] << 8L | mac[2] << 16L | mac[3] << 24L;
     }
-    Udp.begin(localUdpPort);
-    ABSOCK_DBG_PRINTF("*AB: begin()->remoteIP=%s, port=%d, nad=%lu\n", IP_Remote.toString().c_str(), localUdpPort, (long unsigned int)ownNad);
+    Udp.begin(m_localUdpPort);
+    ABSOCK_DBG_PRINTF("*AB: begin()->bCastIP=%s, port=%d, nad=%lu\n", m_BroadCastIp.toString().c_str(), m_localUdpPort, (long uint16_t)m_ownNad);
 
 }
-void abus_socket::begin(unsigned int localUdpPort)
+void abus_socket::begin(uint16_t localUdpPort)
 {
-    localUdpPort = localUdpPort;
+    m_localUdpPort = localUdpPort;
     begin();
 }
-void abus_socket::begin(IPAddress remoteIP)
+void abus_socket::begin(IPAddress bCastIP)
 {
-    IP_Remote = remoteIP;
+    m_BroadCastIp = bCastIP;
     begin();
 }
-void abus_socket::begin(IPAddress remoteIP, unsigned int localUdpPort)
+void abus_socket::begin(IPAddress bCastIP, uint16_t localUdpPort)
 {
-    localUdpPort = localUdpPort;
-    IP_Remote = remoteIP;
+    m_localUdpPort = localUdpPort;
+    m_BroadCastIp = bCastIP;
     begin();
 }
-
 void abus_socket::loop()
 {
     int len = Udp.parsePacket();
@@ -277,7 +302,6 @@ void abus_socket::loop()
         }
     }
 }
-
 void abus_socket::sendSocket(ab_socket socket)
 {
     // check for valid socket
@@ -288,12 +312,12 @@ void abus_socket::sendSocket(ab_socket socket)
     }
     if (socket.sender == 0)
     {
-        if (ownNad == 0)
+        if (m_ownNad == 0)
         {
             ABSOCK_ERR_PRINTLN(F("*AB: sendSocket()->sender missing!"));
             return;
         }
-        socket.sender = ownNad;
+        socket.sender = m_ownNad;
     }
     if (socket.bitdata.size() == 0 && socket.intdata.size() == 0 && socket.longdata.size() == 0 && socket.realdata.size() == 0)
     {
@@ -318,7 +342,6 @@ void abus_socket::sendSocket(ab_socket socket)
 
     sendRaw(sendbuf, header.len + 14);
 }
-
 void abus_socket::sendRaw(char *data, size_t datalen)
 {
     ABSOCK_DBG_PRINTF(">  AB:    L%3d: ", datalen);
@@ -328,7 +351,7 @@ void abus_socket::sendRaw(char *data, size_t datalen)
         ABSOCK_DBG_PRINTF(":%02X", data[pos]);
         pos++;
     }
-    Udp.beginPacket(IP_Remote, localUdpPort);
+    Udp.beginPacket(m_BroadCastIp, m_localUdpPort);
 #if defined(ESP8266)
     Udp.write(data, datalen);
 #elif defined(ESP32)
@@ -345,7 +368,6 @@ void abus_socket::sendRaw(char *data, size_t datalen)
         ABSOCK_ERR_PRINTLN(F("*AB: send failed!"));
     }
 }
-
 uint8_t abus_socket::setSocketCallback(ab_socket_config config, SubscribeCallbackAbSocket cbFunction)
 {
     uint8_t pos = 1;
@@ -373,7 +395,6 @@ uint8_t abus_socket::setSocketCallback(uint8_t sock_id, uint8_t bitcount, uint8_
     config.realcount = realcount;
     return setSocketCallback(config, cbFunction);
 }
-
 bool abus_socket::removeSocketCallback(uint8_t handle)
 {
     if (handle == 0 || handle > ABSOCK_MAX_SOCKETS)
