@@ -1,38 +1,3 @@
-Skip to content
-Search or jump to…
-
-Pull requests
-Issues
-Marketplace
-Explore
- 
-@killer0071234 
-Learn Git and GitHub without any code!
-Using the Hello World guide, you’ll start a branch, write comments, and open a pull request.
-
-
-ArminJo
-/
-arduino-test-compile
-3
-213
-Code
-Issues
-1
-Pull requests
-Actions
-Projects
-Wiki
-Security
-Insights
-arduino-test-compile/test/test.ino
-@ArminJo
-ArminJo Example for internal test added
-Latest commit d6750de on 9 Jul 2020
- History
- 1 contributor
-37 lines (30 sloc)  1.2 KB
- 
 /*
   Blink
   Turns an LED on for one second, then off for one second, repeatedly.
@@ -65,15 +30,3 @@ void loop() {
   digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
   delay(1000);                       // wait for a second
 }
-© 2021 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Help
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
