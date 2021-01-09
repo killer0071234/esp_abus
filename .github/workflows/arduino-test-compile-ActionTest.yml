@@ -119,7 +119,7 @@ jobs:
           sketches-exclude: ${{ matrix.sketches-exclude }}
           build-properties: ${{ toJson(matrix.build-properties) }}
           sketch-names:
-            socket_receive.ino,
-            socket_send.ino,
-            socket_send_receive.ino
-          sketch-names-find-start: test
+            socket_receive/socket_receive.ino,
+            socket_send/socket_send.ino,
+            socket_send_receive/socket_send_receive.ino
+          sketch-names-find-start: examples
