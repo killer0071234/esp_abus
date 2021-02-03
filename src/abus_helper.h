@@ -2,7 +2,7 @@
  * abus_helper.h
  * This is a small collection of helper functions to communicate with Cybro PLCs (Cybro-2 / Cybro-3) from Cybrotech Ltd.
  * @author Daniel Gangl <killer007@gmx.at>
- * @version 1.0 02.01.2020 
+ * @version 1.1 03.02.2020 
  */
 #ifndef _ABUS_HELPER_H_
 #define _ABUS_HELPER_H_
@@ -419,7 +419,7 @@ void ab_setHeader(char *data, size_t len, ab_header header)
 {
     if (len > header.len + 14u)
     {
-        ABUS_DBG_PRINTF("*AB: setHeader()->len=%d, from=%lu, to=%lu\n", header.len, header.from, header.to);
+        ABUS_DBG_PRINTF("*AB: setHeader()->len=%d, from=%u, to=%u\n", header.len, header.from, header.to);
         data[0] = 0xAA;
         data[1] = 0x55;
         ab_setUIntVal(data, len, 2, header.len);
@@ -452,7 +452,7 @@ ab_socket ab_getSocket(char *data, size_t datalen, ab_header &header, uint8_t so
         //read the socket id
         retval.config.socket_id = header.typ;
         retval.sender = header.from;
-        ABUS_DBG_PRINTF("*AB: getSocket()->id=%d, sender=%lu, header.len=%d", retval.socket_id, retval.sender, header.len);
+        ABUS_DBG_PRINTF("*AB: getSocket()->id=%d, sender=%u, header.len=%d", retval.config.socket_id, retval.sender, header.len);
         uint16_t pos = 14;
         // check for valid length of data block
         if (header.len != (bitcount + intcount * 2 + longcount * 4 + realcount * 4 + 4))
@@ -532,7 +532,7 @@ ab_socket ab_getSocket(char *data, size_t datalen, ab_header &header, ab_socket_
  */
 void ab_setSocket(char *data, size_t datalen, ab_socket socket)
 {
-    ABUS_DBG_PRINTF("*AB: setSocket()->id=%d, sender=%d", socket.socket_id, socket.sender);
+    ABUS_DBG_PRINTF("*AB: setSocket()->id=%d, sender=%d", socket.config.socket_id, socket.sender);
     uint16_t pos = 14;
     uint8_t slotpos = 0;
     while (socket.bitdata.size() > slotpos)
@@ -550,6 +550,7 @@ void ab_setSocket(char *data, size_t datalen, ab_socket socket)
         pos += 2;
         slotpos++;
     }
+    slotpos = 0;
     while (socket.longdata.size() > slotpos)
     {
         ABUS_DBG_PRINTF(", l%d=%d", slotpos, socket.longdata[slotpos]);
@@ -557,9 +558,10 @@ void ab_setSocket(char *data, size_t datalen, ab_socket socket)
         pos += 4;
         slotpos++;
     }
+    slotpos = 0;
     while (socket.realdata.size() > slotpos)
     {
-        ABUS_DBG_PRINTF(", f%d=%d", slotpos, socket.realdata[slotpos]);
+        ABUS_DBG_PRINTF(", f%d=%f", slotpos, socket.realdata[slotpos]);
         ab_setRealVal(data, datalen, pos, socket.realdata[slotpos]);
         pos += 4;
         slotpos++;
