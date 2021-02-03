@@ -471,7 +471,7 @@ ab_socket ab_getSocket(char *data, size_t datalen, ab_header &header, uint8_t so
             slotpos++;
         }
         slotpos = 0;
-        retval.intdata.resize(intcount);
+        retval.intdata.resize(intcount, 0);
         while (intcount > slotpos)
         {
             //retval.intdata.push_back(ab_getIntVal(data, datalen, pos));
@@ -481,7 +481,7 @@ ab_socket ab_getSocket(char *data, size_t datalen, ab_header &header, uint8_t so
             slotpos++;
         }
         slotpos = 0;
-        retval.longdata.resize(longcount);
+        retval.longdata.resize(longcount, 0);
         while (longcount > slotpos)
         {
             //retval.longdata.push_back(ab_getLongVal(data, datalen, pos));
@@ -491,7 +491,7 @@ ab_socket ab_getSocket(char *data, size_t datalen, ab_header &header, uint8_t so
             slotpos++;
         }
         slotpos = 0;
-        retval.realdata.resize(realcount);
+        retval.realdata.resize(realcount, 0.0);
         while (realcount > slotpos)
         {
             //retval.realdata.push_back(ab_getRealVal(data, datalen, pos));
@@ -561,7 +561,7 @@ void ab_setSocket(char *data, size_t datalen, ab_socket socket)
     slotpos = 0;
     while (socket.realdata.size() > slotpos)
     {
-        ABUS_DBG_PRINTF(", f%d=%f", slotpos, socket.realdata[slotpos]);
+        ABUS_DBG_PRINTF(", f%d=%.1f", slotpos, socket.realdata[slotpos]);
         ab_setRealVal(data, datalen, pos, socket.realdata[slotpos]);
         pos += 4;
         slotpos++;

@@ -22,21 +22,32 @@ void cbSocketReceived(ab_socket sock)
     // print the received socket id
     Serial.print("socket ID=");
     Serial.print(sock.config.socket_id);
-    // print the received boolean / bit value
-    Serial.print(",bit0=");
-    Serial.print(sock.bitdata.at(0));
+    // print all received boolean / bit value
+    for (uint8_t i = 0; i < sock.bitdata.size(); i++)
+    {
+        Serial.printf(",bit%d=", i);
+        Serial.print(sock.bitdata.at(i));
+    }
     // print the received integer value
-    Serial.print(",int0=");
-    Serial.print(sock.intdata.at(0));
+    for (uint8_t i = 0; i < sock.intdata.size(); i++)
+    {
+        Serial.printf(",int%d=", i);
+        Serial.print(sock.intdata.at(i));
+    }
     // print the received long value
-    Serial.print(",long0=");
-    Serial.print(sock.longdata.at(0));
+    for (uint8_t i = 0; i < sock.longdata.size(); i++)
+    {
+        Serial.printf(",long%d=", i);
+        Serial.print(sock.longdata.at(i));
+    }
     // print the received real value
-    Serial.print(",real0=");
-    Serial.print(sock.realdata.at(0));
+    for (uint8_t i = 0; i < sock.realdata.size(); i++)
+    {
+        Serial.printf(",real%d=", i);
+        Serial.print(sock.realdata.at(i));
+    }
     return;
 }
-
 void setup()
 {
     // put your setup code here, to run once:

@@ -266,8 +266,9 @@ void abus_socket::loop()
                         ab_socket newSock = ab_getSocket(recbuf, len, header, cb_socketInfo[cbPos]);
                         if (newSock.socket_valid && cb_fct[cbPos] != NULL)
                         {
-                            ABSOCK_DBG_PRINTF(" --> cb() ");
+                            ABSOCK_DBG_PRINTF(" --> cb(%u) ", cbPos);
                             cb_fct[cbPos](newSock);
+                            break; // stop cycling throught all socket callbacks if we found one
                         }
                     }
                     cbPos++;
