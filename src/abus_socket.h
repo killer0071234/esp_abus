@@ -3,7 +3,7 @@
     Purpose: Send and Receive Abus Socket messages between Cybro PLC and ESP8266 / ESP32
 
     @author Daniel Gangl
-    @version 1.0 02.01.2020 
+    @version 0.0.6 08.03.2021 
 */
 #ifndef _ABUS_SOCKET_H_
 #define _ABUS_SOCKET_H_
@@ -204,7 +204,8 @@ void abus_socket::begin()
         m_BroadCastIp = WiFi.localIP().v4() | ~WiFi.subnetMask().v4();
     }
 #elif defined(ESP32)
-    if (m_BroadCastIp == INADDR_NONE)
+    if (m_BroadCastIp == IPAddress(INADDR_ANY) ||
+        m_BroadCastIp == IPAddress(INADDR_NONE))
     {
         //ABSOCK_DBG_PRINTLN(F("*AB: calc broadcast IP from WiFi IP"));
         m_BroadCastIp = WiFi.localIP() | ~WiFi.subnetMask();
