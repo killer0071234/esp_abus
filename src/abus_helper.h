@@ -1,4 +1,10 @@
 /**
+ * @Author: Daniel Gangl
+ * @Date:   2021-01-09 16:56:12
+ * @Last Modified by:   Daniel Gangl
+ * @Last Modified time: 2021-09-19 16:24:18
+ */
+/**
  * abus_helper.h
  * This is a small collection of helper functions to communicate with Cybro PLCs (Cybro-2 / Cybro-3) from Cybrotech Ltd.
  * @author Daniel Gangl <killer007@gmx.at>
@@ -277,7 +283,7 @@ void ab_setRealVal(char *data, size_t len, uint16_t pos, float_t val)
  * write bool(ean) value into the packet buffer
  * @param data pointer to data buffer
  * @param len maximum length of data buffer
- * @param pos start position of real / float data in data buffer
+ * @param pos start position of bool(ean) data in data buffer
  * @param val bool(ean) data value
  */
 void ab_setBoolVal(char *data, size_t len, uint16_t pos, bool val)
@@ -290,7 +296,7 @@ void ab_setBoolVal(char *data, size_t len, uint16_t pos, bool val)
  * write integer value into the packet buffer
  * @param data pointer to data buffer
  * @param len maximum length of data buffer
- * @param pos start position of real / float data in data buffer
+ * @param pos start position of integer data in data buffer
  * @param val integer data value
  */
 void ab_setIntVal(char *data, size_t len, uint16_t pos, int16_t val)
@@ -306,7 +312,7 @@ void ab_setIntVal(char *data, size_t len, uint16_t pos, int16_t val)
  * write unsigned integer value into the packet buffer
  * @param data pointer to data buffer
  * @param len maximum length of data buffer
- * @param pos start position of real / float data in data buffer
+ * @param pos start position of unsigned integer data in data buffer
  * @param val unsigned integer data value
  */
 void ab_setUIntVal(char *data, size_t len, uint16_t pos, uint16_t val)
@@ -322,7 +328,7 @@ void ab_setUIntVal(char *data, size_t len, uint16_t pos, uint16_t val)
  * write long value into the packet buffer
  * @param data pointer to data buffer
  * @param len maximum length of data buffer
- * @param pos start position of real / float data in data buffer
+ * @param pos start position of long data in data buffer
  * @param val long data value
  */
 void ab_setLongVal(char *data, size_t len, uint16_t pos, int32_t val)
@@ -341,7 +347,7 @@ void ab_setLongVal(char *data, size_t len, uint16_t pos, int32_t val)
  * write unsigned long value into the packet buffer
  * @param data pointer to data buffer
  * @param len maximum length of data buffer
- * @param pos start position of real / float data in data buffer
+ * @param pos start position of unsigned long data in data buffer
  * @param val unsigned long data value
  */
 void ab_setULongVal(char *data, size_t len, uint16_t pos, uint32_t val)
