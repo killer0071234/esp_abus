@@ -1,4 +1,10 @@
 /**
+ * @Author: Daniel Gangl
+ * @Date:   2021-01-09 16:56:12
+ * @Last Modified by:   Daniel Gangl
+ * @Last Modified time: 2021-09-19 16:52:53
+ */
+/**
     abus_socket.h
     Purpose: Send and Receive Abus Socket messages between Cybro PLC and ESP8266 / ESP32
 
@@ -302,6 +308,11 @@ void abus_socket::loop()
             }
             #endif       
         }
+		else
+		{
+			// if there was an error restart the UDP protocol driver
+			begin();
+		}
     }
 }
 void abus_socket::sendSocket(ab_socket socket)
