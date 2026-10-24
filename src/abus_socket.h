@@ -74,7 +74,12 @@
     }
 #endif
 
-#include <abus_helper.h>
+#include "abus_helper.h"
+#if defined(ESP8266)
+#include <ESP8266WiFi.h>
+#elif defined(ESP32)
+#include <WiFi.h>
+#endif
 #include <WiFiUdp.h>
 
 //Function pointer that returns a received socket
@@ -179,23 +184,23 @@ public:
 
 // code implementations
 
-abus_socket::abus_socket()
+inline abus_socket::abus_socket()
 {
 }
-abus_socket::abus_socket(uint32_t NAD)
+inline abus_socket::abus_socket(uint32_t NAD)
 {
     m_ownNad = NAD;
 }
-abus_socket::abus_socket(uint16_t localUdpPort, uint32_t NAD)
+inline abus_socket::abus_socket(uint16_t localUdpPort, uint32_t NAD)
 {
     m_localUdpPort = localUdpPort;
     m_ownNad = NAD;
 }
-abus_socket::~abus_socket()
+inline abus_socket::~abus_socket()
 {
     Udp.stop();
 }
-void abus_socket::begin()
+inline void abus_socket::begin()
 {
 #if defined(ESP8266)
     if (!m_BroadCastIp.isSet())
@@ -223,23 +228,23 @@ void abus_socket::begin()
     ABSOCK_DBG_PRINTF("*AB: begin()->bCastIP=%s, port=%d, nad=%lu\n", m_BroadCastIp.toString().c_str(), m_localUdpPort, (long uint16_t)m_ownNad);
 
 }
-void abus_socket::begin(uint16_t localUdpPort)
+inline void abus_socket::begin(uint16_t localUdpPort)
 {
     m_localUdpPort = localUdpPort;
     begin();
 }
-void abus_socket::begin(IPAddress bCastIP)
+inline void abus_socket::begin(IPAddress bCastIP)
 {
     m_BroadCastIp = bCastIP;
     begin();
 }
-void abus_socket::begin(IPAddress bCastIP, uint16_t localUdpPort)
+inline void abus_socket::begin(IPAddress bCastIP, uint16_t localUdpPort)
 {
     m_localUdpPort = localUdpPort;
     m_BroadCastIp = bCastIP;
     begin();
 }
-void abus_socket::loop()
+inline void abus_socket::loop()
 {
     int len = Udp.parsePacket();
     if (len > MAX_DATA_LEN)
@@ -308,7 +313,7 @@ void abus_socket::loop()
         }
     }
 }
-void abus_socket::sendSocket(ab_socket socket)
+inline void abus_socket::sendSocket(ab_socket socket)
 {
     // check for valid socket
     if (socket.config.socket_id == 0)
@@ -354,7 +359,7 @@ void abus_socket::sendSocket(ab_socket socket)
 
     sendRaw(sendbuf, header.len + 14);
 }
-void abus_socket::sendRaw(char *data, size_t datalen)
+inline void abus_socket::sendRaw(char *data, size_t datalen)
 {
     ABSOCK_DBG_PRINTF(">  AB:    L%3d: ", datalen);
     size_t pos = 0;
@@ -380,7 +385,7 @@ void abus_socket::sendRaw(char *data, size_t datalen)
         ABSOCK_ERR_PRINTLN(F("*AB: send failed!"));
     }
 }
-uint8_t abus_socket::setSocketCallback(ab_socket_config config, SubscribeCallbackAbSocket cbFunction)
+inline uint8_t abus_socket::setSocketCallback(ab_socket_config config, SubscribeCallbackAbSocket cbFunction)
 {
     uint8_t pos = 1;
     while (pos <= ABSOCK_MAX_SOCKETS)
@@ -397,7 +402,7 @@ uint8_t abus_socket::setSocketCallback(ab_socket_config config, SubscribeCallbac
     }
     return 0;
 }
-uint8_t abus_socket::setSocketCallback(uint8_t sock_id, uint8_t bitcount, uint8_t intcount, uint8_t longcount, uint8_t realcount, SubscribeCallbackAbSocket cbFunction)
+inline uint8_t abus_socket::setSocketCallback(uint8_t sock_id, uint8_t bitcount, uint8_t intcount, uint8_t longcount, uint8_t realcount, SubscribeCallbackAbSocket cbFunction)
 {
     ab_socket_config config;
     config.socket_id = sock_id;
@@ -407,7 +412,7 @@ uint8_t abus_socket::setSocketCallback(uint8_t sock_id, uint8_t bitcount, uint8_
     config.realcount = realcount;
     return setSocketCallback(config, cbFunction);
 }
-bool abus_socket::removeSocketCallback(uint8_t handle)
+inline bool abus_socket::removeSocketCallback(uint8_t handle)
 {
     if (handle == 0 || handle > ABSOCK_MAX_SOCKETS)
         return false;
