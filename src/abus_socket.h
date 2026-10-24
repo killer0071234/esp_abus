@@ -10,68 +10,46 @@
 
 #define MAX_DATA_LEN 255
 
+// Maximum amount of socket callbacks, can be changed with build_flags = -DABSOCK_MAX_SOCKETS=<n>
+#ifndef ABSOCK_MAX_SOCKETS
 #define ABSOCK_MAX_SOCKETS 32
+#endif
 
-// Uncomment/comment to turn on/off debug output messages.
-#define ABSOCK_DEBUG
-// Uncomment/comment to turn on/off error output messages.
+// The output can be configured with build_flags (PlatformIO) or with a #define before
+// including abus_socket.h:
+//   ABSOCK_DEBUG        turn on debug output of this file (off by default)
+//   ABSOCK_NO_ERROR     turn off error output of this file (on by default)
+//   ABSOCK_DBG_PRINTER  where the output is printed (Serial by default)
+// The same options exist for abus_helper.h with the prefix ABUS_ (ABUS_DEBUG, ABUS_NO_ERROR, ABUS_DBG_PRINTER).
+#if !defined(ABSOCK_NO_ERROR) && !defined(ABSOCK_ERROR)
 #define ABSOCK_ERROR
+#endif
 
 //#define ABSOCK_PARSE_NON_SOCKET
 
-// Set where debug messages will be printed.
+#ifndef ABSOCK_DBG_PRINTER
 #define ABSOCK_DBG_PRINTER Serial
-// If using something like Zero or Due, change the above to SerialUSB
+#endif
 
 // Define actual debug output functions when necessary.
 #ifdef ABSOCK_DEBUG
-#define ABSOCK_DBG_PRINT(...)                  \
-    {                                          \
-        ABSOCK_DBG_PRINTER.print(__VA_ARGS__); \
-    }
-#define ABSOCK_DBG_PRINTF(...)                  \
-    {                                           \
-        ABSOCK_DBG_PRINTER.printf(__VA_ARGS__); \
-    }
-#define ABSOCK_DBG_PRINTLN(...)                  \
-    {                                            \
-        ABSOCK_DBG_PRINTER.println(__VA_ARGS__); \
-    }
+#define ABSOCK_DBG_PRINT(...) do { ABSOCK_DBG_PRINTER.print(__VA_ARGS__); } while (0)
+#define ABSOCK_DBG_PRINTF(...) do { ABSOCK_DBG_PRINTER.printf(__VA_ARGS__); } while (0)
+#define ABSOCK_DBG_PRINTLN(...) do { ABSOCK_DBG_PRINTER.println(__VA_ARGS__); } while (0)
 #else
-#define ABSOCK_DBG_PRINT(...) \
-    {                         \
-    }
-#define ABSOCK_DBG_PRINTF(...) \
-    {                          \
-    }
-#define ABSOCK_DBG_PRINTLN(...) \
-    {                           \
-    }
+#define ABSOCK_DBG_PRINT(...) do {} while (0)
+#define ABSOCK_DBG_PRINTF(...) do {} while (0)
+#define ABSOCK_DBG_PRINTLN(...) do {} while (0)
 #endif
 
 #ifdef ABSOCK_ERROR
-#define ABSOCK_ERR_PRINT(...)                  \
-    {                                          \
-        ABSOCK_DBG_PRINTER.print(__VA_ARGS__); \
-    }
-#define ABSOCK_ERR_PRINTF(...)                  \
-    {                                           \
-        ABSOCK_DBG_PRINTER.printf(__VA_ARGS__); \
-    }
-#define ABSOCK_ERR_PRINTLN(...)                  \
-    {                                            \
-        ABSOCK_DBG_PRINTER.println(__VA_ARGS__); \
-    }
+#define ABSOCK_ERR_PRINT(...) do { ABSOCK_DBG_PRINTER.print(__VA_ARGS__); } while (0)
+#define ABSOCK_ERR_PRINTF(...) do { ABSOCK_DBG_PRINTER.printf(__VA_ARGS__); } while (0)
+#define ABSOCK_ERR_PRINTLN(...) do { ABSOCK_DBG_PRINTER.println(__VA_ARGS__); } while (0)
 #else
-#define ABSOCK_ERR_PRINT(...) \
-    {                         \
-    }
-#define ABSOCK_ERR_PRINTF(...) \
-    {                          \
-    }
-#define ABSOCK_ERR_PRINTLN(...) \
-    {                           \
-    }
+#define ABSOCK_ERR_PRINT(...) do {} while (0)
+#define ABSOCK_ERR_PRINTF(...) do {} while (0)
+#define ABSOCK_ERR_PRINTLN(...) do {} while (0)
 #endif
 
 #include "abus_helper.h"

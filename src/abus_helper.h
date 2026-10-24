@@ -7,64 +7,36 @@
 #ifndef _ABUS_HELPER_H_
 #define _ABUS_HELPER_H_
 
-// Uncomment/comment to turn on/off debug output messages.
-//#define ABUS_DEBUG
-// Uncomment/comment to turn on/off error output messages.
+// Debug output is off by default, turn it on with ABUS_DEBUG.
+// Error output is on by default, turn it off with ABUS_NO_ERROR.
+// Both can be set with build_flags (PlatformIO) or with a #define before including the library.
+#if !defined(ABUS_NO_ERROR) && !defined(ABUS_ERROR)
 #define ABUS_ERROR
+#endif
 
-// Set where debug messages will be printed.
+#ifndef ABUS_DBG_PRINTER
 #define ABUS_DBG_PRINTER Serial
-// If using something like Zero or Due, change the above to SerialUSB
+#endif
 
 // Define actual debug output functions when necessary.
 #ifdef ABUS_DEBUG
-#define ABUS_DBG_PRINT(...)                  \
-    {                                        \
-        ABUS_DBG_PRINTER.print(__VA_ARGS__); \
-    }
-#define ABUS_DBG_PRINTF(...)                  \
-    {                                         \
-        ABUS_DBG_PRINTER.printf(__VA_ARGS__); \
-    }
-#define ABUS_DBG_PRINTLN(...)                  \
-    {                                          \
-        ABUS_DBG_PRINTER.println(__VA_ARGS__); \
-    }
+#define ABUS_DBG_PRINT(...) do { ABUS_DBG_PRINTER.print(__VA_ARGS__); } while (0)
+#define ABUS_DBG_PRINTF(...) do { ABUS_DBG_PRINTER.printf(__VA_ARGS__); } while (0)
+#define ABUS_DBG_PRINTLN(...) do { ABUS_DBG_PRINTER.println(__VA_ARGS__); } while (0)
 #else
-#define ABUS_DBG_PRINT(...) \
-    {                       \
-    }
-#define ABUS_DBG_PRINTF(...) \
-    {                        \
-    }
-#define ABUS_DBG_PRINTLN(...) \
-    {                         \
-    }
+#define ABUS_DBG_PRINT(...) do {} while (0)
+#define ABUS_DBG_PRINTF(...) do {} while (0)
+#define ABUS_DBG_PRINTLN(...) do {} while (0)
 #endif
 
 #ifdef ABUS_ERROR
-#define ABUS_ERR_PRINT(...)                  \
-    {                                        \
-        ABUS_DBG_PRINTER.print(__VA_ARGS__); \
-    }
-#define ABUS_ERR_PRINTF(...)                  \
-    {                                         \
-        ABUS_DBG_PRINTER.printf(__VA_ARGS__); \
-    }
-#define ABUS_ERR_PRINTLN(...)                  \
-    {                                          \
-        ABUS_DBG_PRINTER.println(__VA_ARGS__); \
-    }
+#define ABUS_ERR_PRINT(...) do { ABUS_DBG_PRINTER.print(__VA_ARGS__); } while (0)
+#define ABUS_ERR_PRINTF(...) do { ABUS_DBG_PRINTER.printf(__VA_ARGS__); } while (0)
+#define ABUS_ERR_PRINTLN(...) do { ABUS_DBG_PRINTER.println(__VA_ARGS__); } while (0)
 #else
-#define ABUS_ERR_PRINT(...) \
-    {                       \
-    }
-#define ABUS_ERR_PRINTF(...) \
-    {                        \
-    }
-#define ABUS_ERR_PRINTLN(...) \
-    {                         \
-    }
+#define ABUS_ERR_PRINT(...) do {} while (0)
+#define ABUS_ERR_PRINTF(...) do {} while (0)
+#define ABUS_ERR_PRINTLN(...) do {} while (0)
 #endif
 
 #include <string.h>
