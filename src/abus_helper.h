@@ -401,7 +401,7 @@ inline void ab_setHeader(char *data, size_t len, ab_header header)
  * @param realcount amount of real tags in socket
  * @return parsed abus socket (empty / null if no socket)
  */
-inline ab_socket ab_getSocket(char *data, size_t datalen, ab_header &header, uint8_t sock_id = 0, uint8_t bitcount = 0, uint8_t intcount = 0, uint8_t longcount = 0, uint8_t realcount = 0)
+inline ab_socket ab_getSocket(char *data, size_t datalen, const ab_header &header, uint8_t sock_id = 0, uint8_t bitcount = 0, uint8_t intcount = 0, uint8_t longcount = 0, uint8_t realcount = 0)
 {
     ab_socket retval;
     // check if we had a socket message
@@ -476,7 +476,7 @@ inline ab_socket ab_getSocket(char *data, size_t datalen, ab_header &header, uin
  * @param sock_conf structure with socket configuraton
  * @return parsed abus socket (empty / null if no socket)
  */
-inline ab_socket ab_getSocket(char *data, size_t datalen, ab_header &header, ab_socket_config sock_conf)
+inline ab_socket ab_getSocket(char *data, size_t datalen, const ab_header &header, const ab_socket_config &sock_conf)
 {
     return ab_getSocket(data, datalen, header, sock_conf.socket_id, sock_conf.bitcount, sock_conf.intcount, sock_conf.longcount, sock_conf.realcount);
 }
@@ -487,7 +487,7 @@ inline ab_socket ab_getSocket(char *data, size_t datalen, ab_header &header, ab_
  * @param datalen maximum data buffer length
  * @param socket socket with tag data
  */
-inline void ab_setSocket(char *data, size_t datalen, ab_socket socket)
+inline void ab_setSocket(char *data, size_t datalen, const ab_socket &socket)
 {
     ABUS_DBG_PRINTF("*AB: setSocket()->id=%d, sender=%d", socket.config.socket_id, socket.sender);
     uint16_t pos = 14;

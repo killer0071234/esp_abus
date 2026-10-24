@@ -59,9 +59,11 @@
 #include <WiFi.h>
 #endif
 #include <WiFiUdp.h>
+#include <functional>
 
-//Function pointer that returns a received socket
-typedef void (*SubscribeCallbackAbSocket)(ab_socket);
+// Callback for a received socket. Functions taking the socket by value (void cb(ab_socket sock))
+// still work, but void cb(const ab_socket &sock) avoids a copy. Lambdas with captures are possible as well.
+typedef std::function<void(const ab_socket &)> SubscribeCallbackAbSocket;
 
 class abus_socket
 {
@@ -73,7 +75,7 @@ private:
     uint32_t m_ownNad = 0;                                  // own communication NAD
     ab_socket_config cb_socketInfo[ABSOCK_MAX_SOCKETS];     // callback socket config data
     uint8_t cb_id[ABSOCK_MAX_SOCKETS] = {};                 // callback ids
-    SubscribeCallbackAbSocket cb_fct[ABSOCK_MAX_SOCKETS] = {}; // callback function pointers
+    SubscribeCallbackAbSocket cb_fct[ABSOCK_MAX_SOCKETS];   // callback functions
 public:
     /**
      * * abus_socket 
@@ -127,7 +129,7 @@ public:
      * send out a abus socket message
      * @param ab_socket the socket to send out
     */
-    void sendSocket(ab_socket);
+    void sendSocket(const ab_socket &socket);
     /**
      * send a raw message on the network
      * @param data pointer to send data buffer
@@ -255,7 +257,7 @@ inline void abus_socket::loop()
                     if(cb_id[cbPos] > 0 && cb_socketInfo[cbPos].socket_id == header.typ)
                     {
                         ab_socket newSock = ab_getSocket(recbuf, len, header, cb_socketInfo[cbPos]);
-                        if (newSock.socket_valid && cb_fct[cbPos] != NULL)
+                        if (newSock.socket_valid && cb_fct[cbPos])
                         {
                             ABSOCK_DBG_PRINTF(" --> cb(%u) ", cbPos);
                             cb_fct[cbPos](newSock);
@@ -291,7 +293,7 @@ inline void abus_socket::loop()
         }
     }
 }
-inline void abus_socket::sendSocket(ab_socket socket)
+inline void abus_socket::sendSocket(const ab_socket &socket)
 {
     // check for valid socket
     if (socket.config.socket_id == 0)
@@ -299,14 +301,15 @@ inline void abus_socket::sendSocket(ab_socket socket)
         ABSOCK_ERR_PRINTLN(F("*AB: sendSocket()->ID missing!"));
         return;
     }
-    if (socket.sender == 0)
+    uint32_t sender = socket.sender;
+    if (sender == 0)
     {
         if (m_ownNad == 0)
         {
             ABSOCK_ERR_PRINTLN(F("*AB: sendSocket()->sender missing!"));
             return;
         }
-        socket.sender = m_ownNad;
+        sender = m_ownNad;
     }
     if (socket.bitdata.size() == 0 && socket.intdata.size() == 0 && socket.longdata.size() == 0 && socket.realdata.size() == 0)
     {
@@ -317,7 +320,7 @@ inline void abus_socket::sendSocket(ab_socket socket)
     ab_header header;
     header.dir = 1;
     header.typ = socket.config.socket_id;
-    header.from = socket.sender;
+    header.from = sender;
     header.to = 0;
     size_t datalen = socket.bitdata.size() + socket.intdata.size() * 2 + socket.longdata.size() * 4 + socket.realdata.size() * 4 + 4;
     if (datalen + 14 > MAX_DATA_LEN)
@@ -372,7 +375,7 @@ inline uint8_t abus_socket::setSocketCallback(ab_socket_config config, Subscribe
         {
             cb_id[pos - 1] = pos;
             cb_socketInfo[pos - 1] = config;
-            cb_fct[pos - 1] = cbFunction;
+            cb_fct[pos - 1] = std::move(cbFunction);
             ABSOCK_DBG_PRINTF("*AB: subscribeSocket: pos=%d, id=%d, bits=%d, ints=%d, longs=%d, reals=%d\n", pos - 1, config.socket_id, config.bitcount, config.intcount, config.longcount, config.realcount);
             return pos;
         }
@@ -400,7 +403,7 @@ inline bool abus_socket::removeSocketCallback(uint8_t handle)
         if(cb_id[pos - 1] == handle)
         {
             cb_id[pos - 1] = 0;
-            cb_fct[pos - 1] = NULL;
+            cb_fct[pos - 1] = nullptr;
             ABSOCK_DBG_PRINTF("*AB: unsubscribeSocket: handle=%1d\n", handle);
             return true;
         }
