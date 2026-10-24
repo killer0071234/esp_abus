@@ -67,6 +67,7 @@
     }
 #endif
 
+#include <string.h>
 #include <vector>
 #include "Arduino.h"
 // Primtable for CRC calculation
@@ -142,6 +143,10 @@ uint16_t ab_calcCRC(char *data, size_t datalen)
     return crc;
 }
 
+// all 4 byte values (long and real) are converted with these functions
+uint32_t ab_getULongVal(char *data, size_t len, uint16_t pos);
+void ab_setULongVal(char *data, size_t len, uint16_t pos, uint32_t val);
+
 /**
  * extract a single boolean value out of the packet
  * @param data pointer to data buffer
@@ -203,15 +208,7 @@ uint16_t ab_getUIntVal(char *data, size_t len, uint16_t pos)
  */
 int32_t ab_getLongVal(char *data, size_t len, uint16_t pos)
 {
-    int32_t retval = 0;
-    if (len >= pos + 4u)
-    {
-        retval = data[pos];
-        retval += data[pos + 1] << 8;
-        retval += data[pos + 2] << 16;
-        retval += data[pos + 3] << 24;
-    }
-    return retval;
+    return (int32_t)ab_getULongVal(data, len, pos);
 }
 
 /**
@@ -223,13 +220,14 @@ int32_t ab_getLongVal(char *data, size_t len, uint16_t pos)
  */
 uint32_t ab_getULongVal(char *data, size_t len, uint16_t pos)
 {
+    // abus values are transferred least significant byte first (little endian)
     uint32_t retval = 0;
     if (len >= pos + 4u)
     {
-        retval = data[pos];
-        retval += data[pos + 1] << 8;
-        retval += data[pos + 2] << 16;
-        retval += data[pos + 3] << 24;
+        retval = (uint32_t)(uint8_t)data[pos];
+        retval |= (uint32_t)(uint8_t)data[pos + 1] << 8;
+        retval |= (uint32_t)(uint8_t)data[pos + 2] << 16;
+        retval |= (uint32_t)(uint8_t)data[pos + 3] << 24;
     }
     return retval;
 }
@@ -243,15 +241,14 @@ uint32_t ab_getULongVal(char *data, size_t len, uint16_t pos)
  */
 float_t ab_getRealVal(char *data, size_t len, uint16_t pos)
 {
-    ab_real.real = 0.0;
+    // reals are IEEE 754 single precision, transferred like an unsigned long
+    float real = 0.0;
     if (len >= pos + 4u)
     {
-        ab_real.bytes[0] = data[pos];
-        ab_real.bytes[1] = data[pos + 1];
-        ab_real.bytes[2] = data[pos + 2];
-        ab_real.bytes[3] = data[pos + 3];
+        uint32_t raw = ab_getULongVal(data, len, pos);
+        memcpy(&real, &raw, sizeof(real));
     }
-    return ab_real.real;
+    return real;
 }
 
 /**
@@ -263,14 +260,10 @@ float_t ab_getRealVal(char *data, size_t len, uint16_t pos)
  */
 void ab_setRealVal(char *data, size_t len, uint16_t pos, float_t val)
 {
-    ab_real.real = val;
-    if (len >= pos + 4u)
-    {
-        data[pos] = ab_real.bytes[0];
-        data[pos + 1] = ab_real.bytes[1];
-        data[pos + 2] = ab_real.bytes[2];
-        data[pos + 3] = ab_real.bytes[3];
-    }
+    float real = val;
+    uint32_t raw;
+    memcpy(&raw, &real, sizeof(raw));
+    ab_setULongVal(data, len, pos, raw);
 }
 
 /**
@@ -327,14 +320,7 @@ void ab_setUIntVal(char *data, size_t len, uint16_t pos, uint16_t val)
  */
 void ab_setLongVal(char *data, size_t len, uint16_t pos, int32_t val)
 {
-    if (len >= pos + 4u)
-    {
-        ab_long.l = val;
-        data[pos] = ab_long.b[0];
-        data[pos + 1] = ab_long.b[1];
-        data[pos + 2] = ab_long.b[2];
-        data[pos + 3] = ab_long.b[3];
-    }
+    ab_setULongVal(data, len, pos, (uint32_t)val);
 }
 
 /**
@@ -346,13 +332,13 @@ void ab_setLongVal(char *data, size_t len, uint16_t pos, int32_t val)
  */
 void ab_setULongVal(char *data, size_t len, uint16_t pos, uint32_t val)
 {
+    // abus values are transferred least significant byte first (little endian)
     if (len >= pos + 4u)
     {
-        ab_ulong.ul = val;
-        data[pos] = ab_ulong.b[0];
-        data[pos + 1] = ab_ulong.b[1];
-        data[pos + 2] = ab_ulong.b[2];
-        data[pos + 3] = ab_ulong.b[3];
+        data[pos] = (char)(val & 0xFF);
+        data[pos + 1] = (char)(val >> 8);
+        data[pos + 2] = (char)(val >> 16);
+        data[pos + 3] = (char)(val >> 24);
     }
 }
 

@@ -214,9 +214,10 @@ void abus_socket::begin()
     if (!m_ownNad)
     {
         // use the last 4 bytes of the mac address (the first 3 bytes are the vendor id)
+        // e.g. mac ..:AB:12:34:56 -> NAD 0xAB123456
         uint8_t mac[6];
         WiFi.macAddress(mac);
-        m_ownNad = mac[2] | mac[3] << 8 | mac[4] << 16 | (uint32_t)mac[5] << 24;
+        m_ownNad = (uint32_t)mac[2] << 24 | (uint32_t)mac[3] << 16 | (uint32_t)mac[4] << 8 | mac[5];
     }
     Udp.begin(m_localUdpPort);
     ABSOCK_DBG_PRINTF("*AB: begin()->bCastIP=%s, port=%d, nad=%lu\n", m_BroadCastIp.toString().c_str(), m_localUdpPort, (long uint16_t)m_ownNad);

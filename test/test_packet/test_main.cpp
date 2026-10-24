@@ -104,6 +104,35 @@ void test_max_size_packet()
     free(buf);
 }
 
+void test_wire_format_is_little_endian()
+{
+    char buf[MAX_DATA_LEN];
+    ab_socket s = exampleSocket();
+    buildPacket(buf, sizeof(buf), s);
+    // tag data starts at byte 14: bit, int, long, real
+    const uint8_t expected[] = {0x01,                    // true
+                                0x85, 0xFF,              // -123      = 0xFF85
+                                0xC0, 0x1D, 0xFE, 0xFF,  // -123456   = 0xFFFE1DC0
+                                0x00, 0x00, 0x48, 0x41}; // 12.5f     = 0x41480000
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(expected, (uint8_t *)&buf[14], sizeof(expected));
+    // sender NAD in header bytes 4..7
+    const uint8_t nad[] = {0x78, 0x56, 0x34, 0x12};
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(nad, (uint8_t *)&buf[4], sizeof(nad));
+}
+
+void test_decode_known_bytes()
+{
+    char buf[] = {(char)0x40, (char)0xE2, 0x01, 0x00,         // 123456
+                  (char)0xCD, (char)0xCC, 0x44, 0x41,         // 12.3f = 0x4144CCCD
+                  0x00, 0x00, 0x00, (char)0xBF,               // -0.5f = 0xBF000000
+                  (char)0xFF, (char)0xFF, (char)0xFF, 0x7F};  // 2147483647
+    TEST_ASSERT_EQUAL_INT32(123456, ab_getLongVal(buf, sizeof(buf), 0));
+    TEST_ASSERT_EQUAL_FLOAT(12.3f, ab_getRealVal(buf, sizeof(buf), 4));
+    TEST_ASSERT_EQUAL_FLOAT(-0.5f, ab_getRealVal(buf, sizeof(buf), 8));
+    TEST_ASSERT_EQUAL_INT32(2147483647, ab_getLongVal(buf, sizeof(buf), 12));
+    TEST_ASSERT_EQUAL_HEX32(0x4144CCCD, ab_getULongVal(buf, sizeof(buf), 4));
+}
+
 void test_accessors_respect_buffer_end()
 {
     char buf[8] = {1, 2, 3, 4, 5, 6, 7, 8};
@@ -128,6 +157,8 @@ int main()
     RUN_TEST(test_wrong_tag_count_is_invalid);
     RUN_TEST(test_corrupted_packet_is_invalid);
     RUN_TEST(test_max_size_packet);
+    RUN_TEST(test_wire_format_is_little_endian);
+    RUN_TEST(test_decode_known_bytes);
     RUN_TEST(test_accessors_respect_buffer_end);
     return UNITY_END();
 }
