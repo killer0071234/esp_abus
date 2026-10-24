@@ -49,6 +49,7 @@ jobs:
         #  - arduino:mbed:nano33ble
           - esp8266:esp8266:generic:eesz=4M3M,xtal=80
           - esp32:esp32:esp32:FlashFreq=80
+          - esp32:esp32:esp32c6
         #  - STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
         #  - stm32duino:STM32F1:genericSTM32F103C
         #  - SparkFun:apollo3:sfe_artemis_nano
@@ -64,6 +65,9 @@ jobs:
             #  PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
 
           - arduino-boards-fqbn: esp32:esp32:esp32:FlashFreq=80
+            platform-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+
+          - arduino-boards-fqbn: esp32:esp32:esp32c6
             platform-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
             #sketches-exclude: Blink # Comma separated list of example names to exclude in build
             #build-properties:
