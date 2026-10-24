@@ -71,11 +71,13 @@ private:
     /* data */
     WiFiUDP Udp;                                            // wifi udp driver
     uint16_t m_localUdpPort = 8442;                         // local udp abus port
-    IPAddress m_BroadCastIp;                                // broadcast ip address
+    IPAddress m_BroadCastIp;                                // broadcast ip address set with begin()
+    bool m_fixedBroadCastIp = false;                        // false = calculate the broadcast ip from the WiFi ip on every send
     uint32_t m_ownNad = 0;                                  // own communication NAD
     ab_socket_config cb_socketInfo[ABSOCK_MAX_SOCKETS];     // callback socket config data
     uint8_t cb_id[ABSOCK_MAX_SOCKETS] = {};                 // callback ids
     SubscribeCallbackAbSocket cb_fct[ABSOCK_MAX_SOCKETS];   // callback functions
+    IPAddress broadCastIp();                                // broadcast ip used for sending
 public:
     /**
      * * abus_socket 
@@ -180,22 +182,19 @@ inline abus_socket::~abus_socket()
 {
     Udp.stop();
 }
+inline IPAddress abus_socket::broadCastIp()
+{
+    if (m_fixedBroadCastIp)
+        return m_BroadCastIp;
+    // calculated on every call, so a new ip address after a WiFi reconnect is used
+#if defined(ESP8266)
+    return WiFi.localIP().v4() | ~WiFi.subnetMask().v4();
+#elif defined(ESP32)
+    return WiFi.localIP() | ~WiFi.subnetMask();
+#endif
+}
 inline void abus_socket::begin()
 {
-#if defined(ESP8266)
-    if (!m_BroadCastIp.isSet())
-    {
-        //ABSOCK_DBG_PRINTLN(F("*AB: calc broadcast IP from WiFi IP"));
-        m_BroadCastIp = WiFi.localIP().v4() | ~WiFi.subnetMask().v4();
-    }
-#elif defined(ESP32)
-    if (m_BroadCastIp == IPAddress(0, 0, 0, 0) ||
-        m_BroadCastIp == IPAddress(INADDR_NONE))
-    {
-        //ABSOCK_DBG_PRINTLN(F("*AB: calc broadcast IP from WiFi IP"));
-        m_BroadCastIp = WiFi.localIP() | ~WiFi.subnetMask();
-    }
-#endif
     if (!m_ownNad)
     {
         // use the last 4 bytes of the mac address (the first 3 bytes are the vendor id)
@@ -205,7 +204,7 @@ inline void abus_socket::begin()
         m_ownNad = (uint32_t)mac[2] << 24 | (uint32_t)mac[3] << 16 | (uint32_t)mac[4] << 8 | mac[5];
     }
     Udp.begin(m_localUdpPort);
-    ABSOCK_DBG_PRINTF("*AB: begin()->bCastIP=%s, port=%d, nad=%lu\n", m_BroadCastIp.toString().c_str(), m_localUdpPort, (long uint16_t)m_ownNad);
+    ABSOCK_DBG_PRINTF("*AB: begin()->bCastIP=%s, port=%d, nad=%lu\n", broadCastIp().toString().c_str(), m_localUdpPort, (unsigned long)m_ownNad);
 
 }
 inline void abus_socket::begin(uint16_t localUdpPort)
@@ -216,12 +215,14 @@ inline void abus_socket::begin(uint16_t localUdpPort)
 inline void abus_socket::begin(IPAddress bCastIP)
 {
     m_BroadCastIp = bCastIP;
+    m_fixedBroadCastIp = true;
     begin();
 }
 inline void abus_socket::begin(IPAddress bCastIP, uint16_t localUdpPort)
 {
     m_localUdpPort = localUdpPort;
     m_BroadCastIp = bCastIP;
+    m_fixedBroadCastIp = true;
     begin();
 }
 inline void abus_socket::loop()
@@ -349,7 +350,7 @@ inline void abus_socket::sendRaw(char *data, size_t datalen)
         ABSOCK_DBG_PRINTF(":%02X", data[pos]);
         pos++;
     }
-    Udp.beginPacket(m_BroadCastIp, m_localUdpPort);
+    Udp.beginPacket(broadCastIp(), m_localUdpPort);
 #if defined(ESP8266)
     Udp.write(data, datalen);
 #elif defined(ESP32)
