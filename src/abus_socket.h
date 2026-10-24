@@ -3,7 +3,7 @@
     Purpose: Send and Receive Abus Socket messages between Cybro PLC and ESP8266 / ESP32
 
     @author Daniel Gangl
-    @version 0.0.6 08.03.2021 
+    @version 0.0.7 24.10.2026 
 */
 #ifndef _ABUS_SOCKET_H_
 #define _ABUS_SOCKET_H_
@@ -89,8 +89,8 @@ private:
     IPAddress m_BroadCastIp;                                // broadcast ip address
     uint32_t m_ownNad = 0;                                  // own communication NAD
     ab_socket_config cb_socketInfo[ABSOCK_MAX_SOCKETS];     // callback socket config data
-    uint8_t cb_id[ABSOCK_MAX_SOCKETS];                      // callback ids
-    SubscribeCallbackAbSocket cb_fct[ABSOCK_MAX_SOCKETS];   // callback function pointers
+    uint8_t cb_id[ABSOCK_MAX_SOCKETS] = {};                 // callback ids
+    SubscribeCallbackAbSocket cb_fct[ABSOCK_MAX_SOCKETS] = {}; // callback function pointers
 public:
     /**
      * * abus_socket 
@@ -204,7 +204,7 @@ void abus_socket::begin()
         m_BroadCastIp = WiFi.localIP().v4() | ~WiFi.subnetMask().v4();
     }
 #elif defined(ESP32)
-    if (m_BroadCastIp == IPAddress(INADDR_ANY) ||
+    if (m_BroadCastIp == IPAddress(0, 0, 0, 0) ||
         m_BroadCastIp == IPAddress(INADDR_NONE))
     {
         //ABSOCK_DBG_PRINTLN(F("*AB: calc broadcast IP from WiFi IP"));
@@ -213,9 +213,11 @@ void abus_socket::begin()
 #endif
     if (!m_ownNad)
     {
-        char mac[12];
-        WiFi.macAddress().toCharArray(mac, sizeof(mac), 0);
-        m_ownNad = mac[0] | mac[1] << 8L | mac[2] << 16L | mac[3] << 24L;
+        // use the last 4 bytes of the mac address (the first 3 bytes are the vendor id)
+        // e.g. mac ..:AB:12:34:56 -> NAD 0xAB123456
+        uint8_t mac[6];
+        WiFi.macAddress(mac);
+        m_ownNad = (uint32_t)mac[2] << 24 | (uint32_t)mac[3] << 16 | (uint32_t)mac[4] << 8 | mac[5];
     }
     Udp.begin(m_localUdpPort);
     ABSOCK_DBG_PRINTF("*AB: begin()->bCastIP=%s, port=%d, nad=%lu\n", m_BroadCastIp.toString().c_str(), m_localUdpPort, (long uint16_t)m_ownNad);
@@ -240,6 +242,11 @@ void abus_socket::begin(IPAddress bCastIP, uint16_t localUdpPort)
 void abus_socket::loop()
 {
     int len = Udp.parsePacket();
+    if (len > MAX_DATA_LEN)
+    {
+        ABSOCK_ERR_PRINTF("*AB: loop()->packet too long (%d)\n", len);
+        return;
+    }
     if (len > 0)
     {
         //ABSOCK_DBG_PRINTF("*AB: rec-len=%d, ", len);
@@ -247,7 +254,7 @@ void abus_socket::loop()
         char recbuf[MAX_DATA_LEN];
         Udp.read(recbuf, sizeof(recbuf));
 
-        if (ab_checkValidPacket(recbuf, min(len, (int)sizeof(recbuf))))
+        if (ab_checkValidPacket(recbuf, len))
         {
             ab_header header = ab_getHeader(recbuf, len);
             // we got a socket message
@@ -288,11 +295,8 @@ void abus_socket::loop()
                 ABSOCK_DBG_PRINTF("<  AB: D%3d, T%1d: ", header.dir, header.typ);
                 ABSOCK_DBG_PRINTF("l=%d, %lu --> %lu, ts=%04X", header.len, header.from, header.to, header.ts_id);
                 ABSOCK_DBG_PRINTF(", Data");
-                int posmax = len;
                 int pos = 14;
-                if (len > (int)sizeof(recbuf))
-                    posmax = sizeof(recbuf);
-                while (pos < posmax - 4)
+                while (pos < len - 4)
                 {
                     ABSOCK_DBG_PRINTF(":%02X", recbuf[pos]);
                     pos++;
@@ -332,7 +336,13 @@ void abus_socket::sendSocket(ab_socket socket)
     header.typ = socket.config.socket_id;
     header.from = socket.sender;
     header.to = 0;
-    header.len = socket.bitdata.size() + socket.intdata.size() * 2 + socket.longdata.size() * 4 + socket.realdata.size() * 4 + 4;
+    size_t datalen = socket.bitdata.size() + socket.intdata.size() * 2 + socket.longdata.size() * 4 + socket.realdata.size() * 4 + 4;
+    if (datalen + 14 > MAX_DATA_LEN)
+    {
+        ABSOCK_ERR_PRINTLN(F("*AB: sendSocket()->socketdata too long!"));
+        return;
+    }
+    header.len = datalen;
 
     // generate dataarray
     char sendbuf[MAX_DATA_LEN];
@@ -411,6 +421,7 @@ bool abus_socket::removeSocketCallback(uint8_t handle)
             ABSOCK_DBG_PRINTF("*AB: unsubscribeSocket: handle=%1d\n", handle);
             return true;
         }
+        pos++;
     }
     return false;
 }

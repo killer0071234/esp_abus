@@ -14,13 +14,14 @@ on:
       - '**.cpp'
       - '**.h'
       - '**LibraryBuild.yml'
+      - 'platformio.ini'
   pull_request:
 
 jobs:
   build:
     name: ${{ matrix.arduino-boards-fqbn }} - test compiling examples
 
-    runs-on: ubuntu-18.04 # I picked Ubuntu to use shell scripts.
+    runs-on: ubuntu-latest
 
     #env:
       # Comma separated list without double quotes around the list.
@@ -63,7 +64,7 @@ jobs:
             #  PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
 
           - arduino-boards-fqbn: esp32:esp32:esp32:FlashFreq=80
-            platform-url: https://dl.espressif.com/dl/package_esp32_index.json
+            platform-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
             #sketches-exclude: Blink # Comma separated list of example names to exclude in build
             #build-properties:
             #  PCA9685_Expander: -DUSE_PCA9685_SERVO_EXPANDER
@@ -76,10 +77,10 @@ jobs:
 
       # First of all, we clone the repo using the `checkout` action.
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Compile all examples using the arduino-test-compile action
-        uses: ArminJo/arduino-test-compile@master
+        uses: ArminJo/arduino-test-compile@v3
         with:
           arduino-board-fqbn: ${{ matrix.arduino-boards-fqbn }}
           arduino-platform: ${{ matrix.arduino-platform }}
@@ -87,3 +88,20 @@ jobs:
           required-libraries: ${{ env.REQUIRED_LIBRARIES }}
           sketches-exclude: ${{ matrix.sketches-exclude }}
           build-properties: ${{ toJson(matrix.build-properties) }}
+
+  unittest:
+    name: native unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
+
+      - name: Install PlatformIO
+        run: pip install -U platformio
+
+      - name: Run unit tests
+        run: pio test -e native
