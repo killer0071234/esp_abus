@@ -17,7 +17,7 @@ char pass[] = "SECRET_PASS"; // your network password
 abus_socket abSock(8442, 8266);
 
 // callback declaration for receiving a socket
-void cbSocketReceived(ab_socket sock)
+void cbSocketReceived(const ab_socket &sock)
 {
     // print the received socket id
     Serial.print("socket ID=");

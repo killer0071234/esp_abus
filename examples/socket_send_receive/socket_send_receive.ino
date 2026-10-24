@@ -17,7 +17,7 @@ char pass[] = "SECRET_PASS"; // your network password
 abus_socket abSock(8442, 8266);
 
 // callback declaration for receiving a socket
-void cbSocketReceived(ab_socket sock)
+void cbSocketReceived(const ab_socket &sock)
 {
     // print the received socket id
     Serial.print("socket ID=");
@@ -73,13 +73,13 @@ void setup()
     abSock.setSocketCallback(3, 1, 1, 1, 1, cbSocketReceived);
 }
 
-uint32_t millis_next = 10000;
+uint32_t millis_last = 0;
 void loop()
 {
     // put your main code here, to run repeatedly:
     abSock.loop();
 
-	if (millis() >= millis_next)
+	if (millis() - millis_last >= 10000)
 	{
         // define a new socket object
 		ab_socket sock;
@@ -96,6 +96,6 @@ void loop()
 
         // send the socket over wifi to the PLC
 		abSock.sendSocket(sock);
-		millis_next = millis() + 10000;
+		millis_last = millis();
 	}
 }

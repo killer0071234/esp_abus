@@ -7,64 +7,36 @@
 #ifndef _ABUS_HELPER_H_
 #define _ABUS_HELPER_H_
 
-// Uncomment/comment to turn on/off debug output messages.
-//#define ABUS_DEBUG
-// Uncomment/comment to turn on/off error output messages.
+// Debug output is off by default, turn it on with ABUS_DEBUG.
+// Error output is on by default, turn it off with ABUS_NO_ERROR.
+// Both can be set with build_flags (PlatformIO) or with a #define before including the library.
+#if !defined(ABUS_NO_ERROR) && !defined(ABUS_ERROR)
 #define ABUS_ERROR
+#endif
 
-// Set where debug messages will be printed.
+#ifndef ABUS_DBG_PRINTER
 #define ABUS_DBG_PRINTER Serial
-// If using something like Zero or Due, change the above to SerialUSB
+#endif
 
 // Define actual debug output functions when necessary.
 #ifdef ABUS_DEBUG
-#define ABUS_DBG_PRINT(...)                  \
-    {                                        \
-        ABUS_DBG_PRINTER.print(__VA_ARGS__); \
-    }
-#define ABUS_DBG_PRINTF(...)                  \
-    {                                         \
-        ABUS_DBG_PRINTER.printf(__VA_ARGS__); \
-    }
-#define ABUS_DBG_PRINTLN(...)                  \
-    {                                          \
-        ABUS_DBG_PRINTER.println(__VA_ARGS__); \
-    }
+#define ABUS_DBG_PRINT(...) do { ABUS_DBG_PRINTER.print(__VA_ARGS__); } while (0)
+#define ABUS_DBG_PRINTF(...) do { ABUS_DBG_PRINTER.printf(__VA_ARGS__); } while (0)
+#define ABUS_DBG_PRINTLN(...) do { ABUS_DBG_PRINTER.println(__VA_ARGS__); } while (0)
 #else
-#define ABUS_DBG_PRINT(...) \
-    {                       \
-    }
-#define ABUS_DBG_PRINTF(...) \
-    {                        \
-    }
-#define ABUS_DBG_PRINTLN(...) \
-    {                         \
-    }
+#define ABUS_DBG_PRINT(...) do {} while (0)
+#define ABUS_DBG_PRINTF(...) do {} while (0)
+#define ABUS_DBG_PRINTLN(...) do {} while (0)
 #endif
 
 #ifdef ABUS_ERROR
-#define ABUS_ERR_PRINT(...)                  \
-    {                                        \
-        ABUS_DBG_PRINTER.print(__VA_ARGS__); \
-    }
-#define ABUS_ERR_PRINTF(...)                  \
-    {                                         \
-        ABUS_DBG_PRINTER.printf(__VA_ARGS__); \
-    }
-#define ABUS_ERR_PRINTLN(...)                  \
-    {                                          \
-        ABUS_DBG_PRINTER.println(__VA_ARGS__); \
-    }
+#define ABUS_ERR_PRINT(...) do { ABUS_DBG_PRINTER.print(__VA_ARGS__); } while (0)
+#define ABUS_ERR_PRINTF(...) do { ABUS_DBG_PRINTER.printf(__VA_ARGS__); } while (0)
+#define ABUS_ERR_PRINTLN(...) do { ABUS_DBG_PRINTER.println(__VA_ARGS__); } while (0)
 #else
-#define ABUS_ERR_PRINT(...) \
-    {                       \
-    }
-#define ABUS_ERR_PRINTF(...) \
-    {                        \
-    }
-#define ABUS_ERR_PRINTLN(...) \
-    {                         \
-    }
+#define ABUS_ERR_PRINT(...) do {} while (0)
+#define ABUS_ERR_PRINTF(...) do {} while (0)
+#define ABUS_ERR_PRINTLN(...) do {} while (0)
 #endif
 
 #include <string.h>
@@ -108,22 +80,22 @@ struct ab_socket
 union ab_real {
     float_t real;
     char bytes[sizeof(float_t)];
-} ab_real;
+};
 // helper union for converting 2 bytes into one integer value and vice versa
 union ab_int {
     byte b[sizeof(int16_t)];
     int16_t i;
-} ab_int;
+};
 // helper union for converting 4 bytes into one long value and vice versa
 union ab_long {
     byte b[sizeof(int32_t)];
     int32_t l;
-} ab_long;
+};
 // helper union for converting 4 bytes into one unsigned integer value and vice versa (not used in socket)
 union ab_ulong {
     byte b[sizeof(uint32_t)];
     uint32_t ul;
-} ab_ulong;
+};
 
 /**
  * Calculates the Checksum of the packet
@@ -131,7 +103,7 @@ union ab_ulong {
  * @param datalen data length on which the crc shall be calculated
  * @return calculated crc value 
  */
-uint16_t ab_calcCRC(char *data, size_t datalen)
+inline uint16_t ab_calcCRC(char *data, size_t datalen)
 {
     uint16_t crc = 0;
     size_t index = 0;
@@ -144,8 +116,8 @@ uint16_t ab_calcCRC(char *data, size_t datalen)
 }
 
 // all 4 byte values (long and real) are converted with these functions
-uint32_t ab_getULongVal(char *data, size_t len, uint16_t pos);
-void ab_setULongVal(char *data, size_t len, uint16_t pos, uint32_t val);
+inline uint32_t ab_getULongVal(char *data, size_t len, uint16_t pos);
+inline void ab_setULongVal(char *data, size_t len, uint16_t pos, uint32_t val);
 
 /**
  * extract a single boolean value out of the packet
@@ -154,7 +126,7 @@ void ab_setULongVal(char *data, size_t len, uint16_t pos, uint32_t val);
  * @param pos position of bool(ean) data in data buffer
  * @return bool(ean) data value
  */
-bool ab_getBoolVal(char *data, size_t len, uint16_t pos)
+inline bool ab_getBoolVal(char *data, size_t len, uint16_t pos)
 {
     if (len > pos)
     {
@@ -170,7 +142,7 @@ bool ab_getBoolVal(char *data, size_t len, uint16_t pos)
  * @param pos start position of integer data in data buffer
  * @return integer data value
  */
-int16_t ab_getIntVal(char *data, size_t len, uint16_t pos)
+inline int16_t ab_getIntVal(char *data, size_t len, uint16_t pos)
 {
     int16_t retval = 0;
     if (len >= pos + 2u)
@@ -188,7 +160,7 @@ int16_t ab_getIntVal(char *data, size_t len, uint16_t pos)
  * @param pos start position of unsigned integer data in data buffer
  * @return unsigned integer data value
  */
-uint16_t ab_getUIntVal(char *data, size_t len, uint16_t pos)
+inline uint16_t ab_getUIntVal(char *data, size_t len, uint16_t pos)
 {
     uint16_t retval = 0;
     if (len >= pos + 2u)
@@ -206,7 +178,7 @@ uint16_t ab_getUIntVal(char *data, size_t len, uint16_t pos)
  * @param pos start position of long data in data buffer
  * @return long data value
  */
-int32_t ab_getLongVal(char *data, size_t len, uint16_t pos)
+inline int32_t ab_getLongVal(char *data, size_t len, uint16_t pos)
 {
     return (int32_t)ab_getULongVal(data, len, pos);
 }
@@ -218,7 +190,7 @@ int32_t ab_getLongVal(char *data, size_t len, uint16_t pos)
  * @param pos start position of unsigned long data in data buffer
  * @return unsigned long data value
  */
-uint32_t ab_getULongVal(char *data, size_t len, uint16_t pos)
+inline uint32_t ab_getULongVal(char *data, size_t len, uint16_t pos)
 {
     // abus values are transferred least significant byte first (little endian)
     uint32_t retval = 0;
@@ -239,7 +211,7 @@ uint32_t ab_getULongVal(char *data, size_t len, uint16_t pos)
  * @param pos start position of real / float data in data buffer
  * @return real / float data value
  */
-float_t ab_getRealVal(char *data, size_t len, uint16_t pos)
+inline float_t ab_getRealVal(char *data, size_t len, uint16_t pos)
 {
     // reals are IEEE 754 single precision, transferred like an unsigned long
     float real = 0.0;
@@ -258,7 +230,7 @@ float_t ab_getRealVal(char *data, size_t len, uint16_t pos)
  * @param pos start position of real / float data in data buffer
  * @param val real / float data value
  */
-void ab_setRealVal(char *data, size_t len, uint16_t pos, float_t val)
+inline void ab_setRealVal(char *data, size_t len, uint16_t pos, float_t val)
 {
     float real = val;
     uint32_t raw;
@@ -273,7 +245,7 @@ void ab_setRealVal(char *data, size_t len, uint16_t pos, float_t val)
  * @param pos start position of real / float data in data buffer
  * @param val bool(ean) data value
  */
-void ab_setBoolVal(char *data, size_t len, uint16_t pos, bool val)
+inline void ab_setBoolVal(char *data, size_t len, uint16_t pos, bool val)
 {
     if (len > pos)
         data[pos] = (char)val;
@@ -286,7 +258,7 @@ void ab_setBoolVal(char *data, size_t len, uint16_t pos, bool val)
  * @param pos start position of real / float data in data buffer
  * @param val integer data value
  */
-void ab_setIntVal(char *data, size_t len, uint16_t pos, int16_t val)
+inline void ab_setIntVal(char *data, size_t len, uint16_t pos, int16_t val)
 {
     if (len >= pos + 2u)
     {
@@ -302,7 +274,7 @@ void ab_setIntVal(char *data, size_t len, uint16_t pos, int16_t val)
  * @param pos start position of real / float data in data buffer
  * @param val unsigned integer data value
  */
-void ab_setUIntVal(char *data, size_t len, uint16_t pos, uint16_t val)
+inline void ab_setUIntVal(char *data, size_t len, uint16_t pos, uint16_t val)
 {
     if (len >= pos + 2u)
     {
@@ -318,7 +290,7 @@ void ab_setUIntVal(char *data, size_t len, uint16_t pos, uint16_t val)
  * @param pos start position of real / float data in data buffer
  * @param val long data value
  */
-void ab_setLongVal(char *data, size_t len, uint16_t pos, int32_t val)
+inline void ab_setLongVal(char *data, size_t len, uint16_t pos, int32_t val)
 {
     ab_setULongVal(data, len, pos, (uint32_t)val);
 }
@@ -330,7 +302,7 @@ void ab_setLongVal(char *data, size_t len, uint16_t pos, int32_t val)
  * @param pos start position of real / float data in data buffer
  * @param val unsigned long data value
  */
-void ab_setULongVal(char *data, size_t len, uint16_t pos, uint32_t val)
+inline void ab_setULongVal(char *data, size_t len, uint16_t pos, uint32_t val)
 {
     // abus values are transferred least significant byte first (little endian)
     if (len >= pos + 4u)
@@ -347,7 +319,7 @@ void ab_setULongVal(char *data, size_t len, uint16_t pos, uint32_t val)
  * @param data pointer to data buffer
  * @param datalen length of (received) data packet
  */
-bool ab_checkValidPacket(char *data, size_t datalen)
+inline bool ab_checkValidPacket(char *data, size_t datalen)
 {
     if (datalen > 12 + 2)
     {
@@ -380,7 +352,7 @@ bool ab_checkValidPacket(char *data, size_t datalen)
  * @param data pointer to data buffer
  * @param datalen maximum data length of data buffer
  */
-ab_header ab_getHeader(char *data, size_t datalen)
+inline ab_header ab_getHeader(char *data, size_t datalen)
 {
     ab_header retval;
     retval.len = ab_getUIntVal(data, datalen, 2);
@@ -401,7 +373,7 @@ ab_header ab_getHeader(char *data, size_t datalen)
  * @param len maximum data length of data buffer
  * @param header abus header structure which sall be added to data buffer
  */
-void ab_setHeader(char *data, size_t len, ab_header header)
+inline void ab_setHeader(char *data, size_t len, ab_header header)
 {
     if (len >= header.len + 14u)
     {
@@ -429,7 +401,7 @@ void ab_setHeader(char *data, size_t len, ab_header header)
  * @param realcount amount of real tags in socket
  * @return parsed abus socket (empty / null if no socket)
  */
-ab_socket ab_getSocket(char *data, size_t datalen, ab_header &header, uint8_t sock_id = 0, uint8_t bitcount = 0, uint8_t intcount = 0, uint8_t longcount = 0, uint8_t realcount = 0)
+inline ab_socket ab_getSocket(char *data, size_t datalen, const ab_header &header, uint8_t sock_id = 0, uint8_t bitcount = 0, uint8_t intcount = 0, uint8_t longcount = 0, uint8_t realcount = 0)
 {
     ab_socket retval;
     // check if we had a socket message
@@ -504,7 +476,7 @@ ab_socket ab_getSocket(char *data, size_t datalen, ab_header &header, uint8_t so
  * @param sock_conf structure with socket configuraton
  * @return parsed abus socket (empty / null if no socket)
  */
-ab_socket ab_getSocket(char *data, size_t datalen, ab_header &header, ab_socket_config sock_conf)
+inline ab_socket ab_getSocket(char *data, size_t datalen, const ab_header &header, const ab_socket_config &sock_conf)
 {
     return ab_getSocket(data, datalen, header, sock_conf.socket_id, sock_conf.bitcount, sock_conf.intcount, sock_conf.longcount, sock_conf.realcount);
 }
@@ -515,7 +487,7 @@ ab_socket ab_getSocket(char *data, size_t datalen, ab_header &header, ab_socket_
  * @param datalen maximum data buffer length
  * @param socket socket with tag data
  */
-void ab_setSocket(char *data, size_t datalen, ab_socket socket)
+inline void ab_setSocket(char *data, size_t datalen, const ab_socket &socket)
 {
     ABUS_DBG_PRINTF("*AB: setSocket()->id=%d, sender=%d", socket.config.socket_id, socket.sender);
     uint16_t pos = 14;
@@ -559,7 +531,7 @@ void ab_setSocket(char *data, size_t datalen, ab_socket socket)
  * @param socket pointer to socket structure
  * @param value value which shall be added
  */
-void ab_addBitTag(ab_socket *socket, bool value)
+inline void ab_addBitTag(ab_socket *socket, bool value)
 {
     size_t pos = socket->bitdata.size() + 1;
     socket->bitdata.resize(pos, value);
@@ -571,7 +543,7 @@ void ab_addBitTag(ab_socket *socket, bool value)
  * @param socket pointer to socket structure
  * @param value value which shall be added
  */
-void ab_addIntTag(ab_socket *socket, int16_t value)
+inline void ab_addIntTag(ab_socket *socket, int16_t value)
 {
     size_t pos = socket->intdata.size() + 1;
     socket->intdata.resize(pos, value);
@@ -583,7 +555,7 @@ void ab_addIntTag(ab_socket *socket, int16_t value)
  * @param socket pointer to socket structure
  * @param value value which shall be added
  */
-void ab_addLongTag(ab_socket *socket, int32_t value)
+inline void ab_addLongTag(ab_socket *socket, int32_t value)
 {
     size_t pos = socket->longdata.size() + 1;
     socket->longdata.resize(pos, value);
@@ -595,7 +567,7 @@ void ab_addLongTag(ab_socket *socket, int32_t value)
  * @param socket pointer to socket structure
  * @param value value which shall be added
  */
-void ab_addRealTag(ab_socket *socket, float_t value)
+inline void ab_addRealTag(ab_socket *socket, float_t value)
 {
     if(isnan(value))
         value = 0.0;
