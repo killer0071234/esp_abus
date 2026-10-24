@@ -3,7 +3,7 @@
     Purpose: Send and Receive Abus Socket messages between Cybro PLC and ESP8266 / ESP32
 
     @author Daniel Gangl
-    @version 0.0.7 24.10.2026 
+    @version 0.1.0 25.10.2026 
 */
 #ifndef _ABUS_SOCKET_H_
 #define _ABUS_SOCKET_H_
