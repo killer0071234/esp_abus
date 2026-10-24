@@ -20,6 +20,9 @@
     "homepage": "https://github.com/killer0071234/esp_abus",
     "dependencies": {
     },
+    "export": {
+      "exclude": ["test", "platformio.ini"]
+    },
     "frameworks": "arduino",
     "platforms": ["espressif8266", "espressif32"]
   }
