@@ -151,7 +151,7 @@ uint16_t ab_calcCRC(char *data, size_t datalen)
  */
 bool ab_getBoolVal(char *data, size_t len, uint16_t pos)
 {
-    if (len >= pos)
+    if (len > pos)
     {
         return data[pos] > 0;
     }
@@ -168,7 +168,7 @@ bool ab_getBoolVal(char *data, size_t len, uint16_t pos)
 int16_t ab_getIntVal(char *data, size_t len, uint16_t pos)
 {
     int16_t retval = 0;
-    if (len >= pos + 1u)
+    if (len >= pos + 2u)
     {
         retval = data[pos];
         retval += data[pos + 1] << 8;
@@ -186,7 +186,7 @@ int16_t ab_getIntVal(char *data, size_t len, uint16_t pos)
 uint16_t ab_getUIntVal(char *data, size_t len, uint16_t pos)
 {
     uint16_t retval = 0;
-    if (len >= pos + 1u)
+    if (len >= pos + 2u)
     {
         retval = data[pos];
         retval += data[pos + 1] << 8;
@@ -204,7 +204,7 @@ uint16_t ab_getUIntVal(char *data, size_t len, uint16_t pos)
 int32_t ab_getLongVal(char *data, size_t len, uint16_t pos)
 {
     int32_t retval = 0;
-    if (len >= pos + 3u)
+    if (len >= pos + 4u)
     {
         retval = data[pos];
         retval += data[pos + 1] << 8;
@@ -224,7 +224,7 @@ int32_t ab_getLongVal(char *data, size_t len, uint16_t pos)
 uint32_t ab_getULongVal(char *data, size_t len, uint16_t pos)
 {
     uint32_t retval = 0;
-    if (len >= pos + 3u)
+    if (len >= pos + 4u)
     {
         retval = data[pos];
         retval += data[pos + 1] << 8;
@@ -244,7 +244,7 @@ uint32_t ab_getULongVal(char *data, size_t len, uint16_t pos)
 float_t ab_getRealVal(char *data, size_t len, uint16_t pos)
 {
     ab_real.real = 0.0;
-    if (len >= pos + 3u)
+    if (len >= pos + 4u)
     {
         ab_real.bytes[0] = data[pos];
         ab_real.bytes[1] = data[pos + 1];
@@ -264,7 +264,7 @@ float_t ab_getRealVal(char *data, size_t len, uint16_t pos)
 void ab_setRealVal(char *data, size_t len, uint16_t pos, float_t val)
 {
     ab_real.real = val;
-    if (len >= pos + 3u)
+    if (len >= pos + 4u)
     {
         data[pos] = ab_real.bytes[0];
         data[pos + 1] = ab_real.bytes[1];
@@ -282,7 +282,7 @@ void ab_setRealVal(char *data, size_t len, uint16_t pos, float_t val)
  */
 void ab_setBoolVal(char *data, size_t len, uint16_t pos, bool val)
 {
-    if (len >= pos)
+    if (len > pos)
         data[pos] = (char)val;
 }
 
@@ -295,7 +295,7 @@ void ab_setBoolVal(char *data, size_t len, uint16_t pos, bool val)
  */
 void ab_setIntVal(char *data, size_t len, uint16_t pos, int16_t val)
 {
-    if (len >= pos + 1u)
+    if (len >= pos + 2u)
     {
         data[pos] = (char)(val & 0xFF);
         data[pos + 1] = (char)(val >> 8);
@@ -311,7 +311,7 @@ void ab_setIntVal(char *data, size_t len, uint16_t pos, int16_t val)
  */
 void ab_setUIntVal(char *data, size_t len, uint16_t pos, uint16_t val)
 {
-    if (len >= pos + 1u)
+    if (len >= pos + 2u)
     {
         data[pos] = (char)(val & 0xFF);
         data[pos + 1] = (char)(val >> 8);
@@ -327,7 +327,7 @@ void ab_setUIntVal(char *data, size_t len, uint16_t pos, uint16_t val)
  */
 void ab_setLongVal(char *data, size_t len, uint16_t pos, int32_t val)
 {
-    if (len >= pos + 3u)
+    if (len >= pos + 4u)
     {
         ab_long.l = val;
         data[pos] = ab_long.b[0];
@@ -346,7 +346,7 @@ void ab_setLongVal(char *data, size_t len, uint16_t pos, int32_t val)
  */
 void ab_setULongVal(char *data, size_t len, uint16_t pos, uint32_t val)
 {
-    if (len >= pos + 3u)
+    if (len >= pos + 4u)
     {
         ab_ulong.ul = val;
         data[pos] = ab_ulong.b[0];
@@ -417,7 +417,7 @@ ab_header ab_getHeader(char *data, size_t datalen)
  */
 void ab_setHeader(char *data, size_t len, ab_header header)
 {
-    if (len > header.len + 14u)
+    if (len >= header.len + 14u)
     {
         ABUS_DBG_PRINTF("*AB: setHeader()->len=%d, from=%u, to=%u\n", header.len, header.from, header.to);
         data[0] = 0xAA;
@@ -504,7 +504,6 @@ ab_socket ab_getSocket(char *data, size_t datalen, ab_header &header, uint8_t so
         retval.config.intcount = intcount;
         retval.config.longcount = longcount;
         retval.config.realcount = realcount;
-        retval.config.socket_id = sock_id;
         retval.socket_valid = true;
         ABUS_DBG_PRINTLN("");
     }
@@ -538,7 +537,7 @@ void ab_setSocket(char *data, size_t datalen, ab_socket socket)
     while (socket.bitdata.size() > slotpos)
     {
         ABUS_DBG_PRINTF(", b%d=%d", slotpos, socket.bitdata[slotpos]);
-        data[pos] = socket.bitdata[slotpos];
+        ab_setBoolVal(data, datalen, pos, socket.bitdata[slotpos]);
         pos++;
         slotpos++;
     }
